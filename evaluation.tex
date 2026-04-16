@@ -58,7 +58,7 @@ According to~\citet{zheng2023judging}, strong LLM judges achieve over 80\% agree
 \subsection{Initial Framework}
 \label{sec:initial-framework}
 
-Our initial evaluation used GPT-4.1-mini as the judge with five criteria on a 1--5 scale, following the setup of the DLR baseline~\citep{elbaff2025earthobservationrag}. Two problems emerged. First, score saturation: most answers clustered at 5, leaving too little room to distinguish between pipeline variants. Second, the five criteria borrowed from the baseline (Factuality, Relevance, Groundedness, Helpfulness, and Depth) do not directly measure the qualities this thesis aims to improve: directness, scope awareness, quantitative precision, and structured response organisation.
+Our initial evaluation used GPT-4.1-mini as the judge with five criteria on a 1--5 scale, following the setup of the two-step baseline~\citep{elbaff2025earthobservationrag}. Two problems emerged. First, score saturation: most answers clustered at 5, leaving too little room to distinguish between pipeline variants. Second, the five criteria borrowed from the baseline (Factuality, Relevance, Groundedness, Helpfulness, and Depth) do not directly measure the qualities this thesis aims to improve: directness, scope awareness, quantitative precision, and structured response organisation.
 
 \subsection{Final Framework}
 \label{sec:final-framework}
@@ -100,7 +100,7 @@ We compute per-pipeline means for each criterion and for the overall score. Per-
 \subsection{Bias Mitigations}
 \label{subsec:bias-mitigations}
 
-No automated evaluation framework removes all biases. The LLM-as-a-judge approach carries the judge model's own biases, and Claude Sonnet~4.6 may not score responses the same way a human EO domain expert would. We address this remaining limitation through complementary qualitative error analysis in Chapter~\ref{chap:results}, where we manually inspect the outputs to the four questions from the problem analysis (Section~\ref{sec:failure-patterns}) to verify that score differences correspond to observable quality differences.
+No automated evaluation framework removes all biases. The LLM-as-a-judge approach carries the judge model's own biases, and Claude Sonnet~4.6 may not score responses the same way a human EO domain expert would. Although the Directness criterion penalises unnecessary length, some residual verbosity bias likely remains: the ontology-enhanced pipeline produces longer answers on average, and the judge may reward that length independently of informational content. We address this remaining limitation through complementary qualitative error analysis in Chapter~\ref{chap:results}, where we manually inspect the outputs to the four questions from the problem analysis (Section~\ref{sec:failure-patterns}) to verify that score differences correspond to observable quality differences.
 
 %% ============================================================
 \section{Significance Testing}

@@ -16,7 +16,8 @@ Chapter~\ref{chap:evaluation} described the evaluation setup: four pipeline vari
 \begin{table}[htbp]
 \centering
 \caption{Overall pipeline ranking on the 70-question EO benchmark, evaluated
-by Claude Sonnet~4.6 (mean of eight criteria, 1--10 scale).}
+by Claude Sonnet~4.6 (mean of eight criteria, 1--10 scale). The ontology-enhanced
+pipeline leads on all criteria; the two-step baseline finishes last.}
 \label{tab:overall-ranking}
 \begin{tabular}{clcl}
 \toprule
@@ -33,7 +34,7 @@ by Claude Sonnet~4.6 (mean of eight criteria, 1--10 scale).}
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\textwidth]{chart_4pipe_heatmap.jpg}
-\caption{Heatmap of mean criterion scores across all four pipelines. The ontology-enhanced pipeline shows the deepest green shading across all criteria. Quantitative precision forms a visually distinct cool band for every pipeline.}
+\caption{Heatmap of mean criterion scores across all four pipelines. The ontology-enhanced pipeline (top row) leads on every criterion; quantitative precision forms a distinct cool band across all pipelines, reflecting the abstract-only data limitation.}
 \label{fig:heatmap-overview}
 \end{figure}
 
@@ -53,7 +54,9 @@ The heatmap in Figure~\ref{fig:heatmap-overview} shows the same pattern visually
 \begin{table}[htbp]
 \centering
 \caption{Mean scores per criterion for each pipeline (1--10 scale).
-Bold values mark the highest score in each criterion column.}
+Bold values mark the highest score in each criterion column. Directness
+shows the largest single-criterion gap (7.93 vs 4.59); quantitative precision
+remains the universal weak spot.}
 \label{tab:per-criterion-means}
 \small
 \begin{tabular}{lcccccccc}
@@ -117,8 +120,9 @@ the two-step baseline and the ontology-enhanced pipeline; the smallest
 \begin{table}[htbp]
 \centering
 \caption{Pairwise Wilcoxon signed-rank tests on per-question overall scores
-($n = 70$). All comparisons are significant at $p < 0.001$. Effect sizes
-($r$) are computed as $r = Z / \sqrt{N}$ following~\citet{zheng2023judging}.}
+($n = 70$). All comparisons are significant at $p < 0.001$, with all
+effect sizes above $r = 0.77$ (large per~\citet{kerby2014simple}). Effect
+sizes ($r$) are computed as $r = Z / \sqrt{N}$.}
 \label{tab:pairwise-tests}
 \begin{tabular}{llcc}
 \toprule

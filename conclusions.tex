@@ -12,18 +12,22 @@ Yes. The ontology-enhanced pipeline scores 7.48/10 overall, significantly outper
 
 \paragraph{Sub-RQ 1: How can query-specific ontologies capture the semantic structure of Earth observation questions to guide document retrieval and context refinement?}
 
+\noindent\emph{Evidence: Table~\ref{tab:ont-vs-noont-criteria} and \S\ref{sec:failure-mode-analysis}.}
 The ontology agent decomposes each query into five semantic dimensions (biophysical variable, sensor/method, spatial scope, temporal scope, application domain) and assigns centrality scores. This gives the refinement agent a structured checklist for filtering documents and gives the generation agent a priority ordering for the answer. The gains on directness (+0.81) and scope awareness (+0.56) show that this decomposition translates into measurable improvements. The ontology is generated dynamically for each query, so it adapts to the specific semantic structure of the question rather than relying on a fixed set of categories.
 
 \paragraph{Sub-RQ 2: To what extent can small language models handle complex Earth observation queries within a multi-agent RAG pipeline?}
 
+\noindent\emph{Evidence: Table~\ref{tab:overall-ranking} and \S\ref{sec:quant-precision}.}
 Mistral Small 24B achieves 7.48/10 in the ontology-enhanced pipeline. The multi-agent design distributes reasoning across specialised agents, each handling a focused sub-task with structured context of 5{,}000--7{,}500 tokens. The ontology reduces the reasoning burden on the small model by telling it what dimensions to prioritise rather than leaving it to figure this out from raw context. The model still struggles with quantitative precision (5.93/10) and occasionally produces weaker answers when the ontological context becomes too complex for simple queries.
 
 \paragraph{Sub-RQ 3: How reliable are LLM-as-a-judge evaluation frameworks for assessing RAG systems in specialised scientific domains, and what are their key limitations?}
 
+\noindent\emph{Evidence: \S\ref{sec:initial-framework}, \S\ref{sec:final-framework}, and Table~\ref{tab:pairwise-tests}.}
 They work for detecting relative differences between pipelines when designed carefully. Our initial GPT-4.1-mini framework failed: score saturation (93--99\% at ceiling) made it nearly useless for distinguishing pipeline quality. The revised Claude Sonnet~4.6 framework with eight criteria on a 1--10 scale resolved this, reducing ceiling scores to 5.2\% and detecting significant differences on all six pairwise comparisons. The key limitations are that the judge model has its own biases, context-blind judging cannot verify whether claims are grounded in retrieved documents, and the moderate inter-criterion correlation ($r = 0.65$) means the eight criteria are not fully independent. Framework design (scale, criteria, context handling) matters as much as the choice of judge model.
 
 \paragraph{Sub-RQ 4: Does ontology-based semantic grounding provide significant performance benefits for small-model RAG systems, and to what extent can such an approach generalise to other knowledge-intensive domains beyond Earth observation?}
 
+\noindent\emph{Evidence: Table~\ref{tab:ont-vs-noont-criteria} and \S\ref{sec:discuss-generalisability}.}
 Yes, the ontology provides a significant benefit: +0.60 overall ($p < 0.001$), with wins on 56 of 70~questions and significant gains on all eight criteria. The largest improvements are on helpfulness (+0.86) and directness (+0.81). The pipeline design is domain-agnostic. The ontology agent is dynamic and the semantic dimensions can be adapted to any domain with structured knowledge, as we discussed in Section~\ref{sec:discuss-generalisability}. Generalisation is structurally supported but not empirically validated. Testing in other domains would require adapted ontology dimensions and a quality retrieval source. We tested on one domain, one knowledge graph, and one model.
 
 

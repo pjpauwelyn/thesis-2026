@@ -52,33 +52,10 @@ Figure~\ref{fig:pipeline} shows the end-to-end architecture. A query passes thro
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{pipeline_diagram}
-\caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Grey boxes represent existing DLR baseline components; coloured boxes represent the three new agents.}
+\caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Grey boxes represent existing two-step baseline components; coloured boxes represent the three new agents.}
 \label{fig:pipeline}
 \end{figure}
-Your compile timed out
-Your project exceeded the compile timeout limit on our free plan.
 
-Upgrade to get more compile time (plus additional collaborators, document history, track changes, and more).
-
-
-Command \showhyphens has changed.
-‪./bscthesis.tex‬
-Reference `lst:prompt-ontology' on page 24 undefined on input line 190.
-‪./approach.tex, 190‬
-Font shape `OMS/ntxtlf/m/it' undefined
-‪./approach.tex‬
-Reference `lst:prompt-refinement' on page 27 undefined on input line 333.
-‪./approach.tex, 333‬
-Reference `lst:prompt-refinement-no-ontology' on page 27 undefined on input line 333.
-‪./approach.tex, 333‬
-Reference `lst:prompt-generation' on page 30 undefined on input line 441.
-‪./approach.tex, 441‬
-Underfull \hbox (badness 10000) in paragraph at lines 88--88
-‪./bscthesis.tex, 88‬
-Underfull \hbox (badness 10000) in paragraph at lines 52--53
-‪./introduction.tex, 52‬
-Overfull \hbox (20.06451pt too wide) in paragraph at lines 182--183
-‪./approach.tex, 182‬
 %% ============================================================
 \section{Ontology Agent}
 \label{sec:ontology-agent}
@@ -439,7 +416,7 @@ Several design decisions shape the prompt, each targeting a failure from Chapter
 \item \textbf{Citations from context only.} References use only entries from the Refinement Agent's \texttt{[VALIDATED REFERENCES]}. Made-up citations are prohibited~\citep{lewis2020retrieval}.
 \end{itemize}
 
-The complete generation refinement prompt is provided in Listing~\ref{lst:prompt-generation} (Appendix~\ref{app:prompt-generation}).
+The complete generation refinement prompt is provided in Listing~\ref{lst:generation-prompt} (Appendix~\ref{app:prompt-generation}).
 
 %% ============================================================
 \section{Pipeline Integration}
