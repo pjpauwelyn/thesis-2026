@@ -1,0 +1,10 @@
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+Retrieval-Augmented Generation (RAG) is the standard way to ground language models in scientific evidence, but open-source implementations still hallucinate and drift off-context in specialised domains. Earth observation (EO) is a clear example: queries combine sensors, biophysical variables, and strict spatial and temporal scope, and even when relevant documents are retrieved, the assembled context fails to align with the question and dilutes the answer.
+
+We propose an ontology-enhanced three-agent pipeline that extends an existing knowledge-graph RAG baseline from the German Aerospace Center (DLR). An ontology agent parses each query into a compact ontology of 4 to 8 attribute-value pairs across five semantic dimensions: temporal scope, spatial scope, application domain, sensor or method, and biophysical variable. A refinement agent filters retrieved documents against this ontology and produces a structured context. A generation agent then drafts and refines the final answer. All agents run on Mistral Small, an open-source 24B model.
+
+We evaluated four pipeline variants on 70~EO questions: the two-step DLR baseline, a zero-shot model, a no-ontology version of our pipeline, and the full ontology-enhanced pipeline. Claude Sonnet~4.6 acted as judge on a 1--10 scale over eight criteria covering scientific accuracy, relevance, completeness, directness, quantitative precision, response structure, scope awareness, and helpfulness.
+
+The ontology-enhanced pipeline scored 7.48 overall, ahead of no-ontology (6.88), zero-shot (6.28), and the two-step baseline (5.51). It led on all eight criteria, with the largest gains over no-ontology on helpfulness (+0.86), directness (+0.81), and scientific accuracy (+0.64). All six pairwise comparisons were significant at $p < 0.001$ with effect sizes above $r = 0.77$. Quantitative precision stayed the weakest criterion (5.93) because abstracts rarely contain exact numbers. The design is domain-agnostic and applies wherever queries are multi-dimensional.

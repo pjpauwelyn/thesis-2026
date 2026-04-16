@@ -1,0 +1,50 @@
+\chapter{Conclusion and Future Work}
+\label{chap:conclusion}
+
+\section{Research Question Answers}
+\label{sec:rq-answers}
+
+This section answers each research question based on the results from Chapter~\ref{chap:results} and the discussion in Chapter~\ref{chap:discussion}.
+
+\paragraph{Main RQ: Can a multi-agent architecture with dynamic ontology generation reduce hallucinations and improve contextual alignment in domain-specific RAG systems for Earth observation queries?}
+
+Yes. The ontology-enhanced pipeline scores 7.48/10 overall, significantly outperforming the no-ontology variant (6.88), the zero-shot baseline (6.28), and the two-step baseline (5.51). All pairwise differences are significant at $p < 0.001$ with large effect sizes ($r > 0.77$). Scientific accuracy improves by +0.64 over no-ontology and +1.17 over the two-step baseline, indicating reduced hallucination. Scope awareness improves by +0.56 over no-ontology and +3.09 over the two-step baseline, indicating better contextual alignment. The improvement is not absolute: quantitative precision remains a weakness at 5.93/10, and on about 20\% of questions the ontology adds marginal or no benefit.
+
+\paragraph{Sub-RQ 1: How can query-specific ontologies capture the semantic structure of Earth observation questions to guide document retrieval and context refinement?}
+
+The ontology agent decomposes each query into five semantic dimensions (biophysical variable, sensor/method, spatial scope, temporal scope, application domain) and assigns centrality scores. This gives the refinement agent a structured checklist for filtering documents and gives the generation agent a priority ordering for the answer. The gains on directness (+0.81) and scope awareness (+0.56) show that this decomposition translates into measurable improvements. The ontology is generated dynamically for each query, so it adapts to the specific semantic structure of the question rather than relying on a fixed set of categories.
+
+\paragraph{Sub-RQ 2: To what extent can small language models handle complex Earth observation queries within a multi-agent RAG pipeline?}
+
+Mistral Small 24B achieves 7.48/10 in the ontology-enhanced pipeline. The multi-agent design distributes reasoning across specialised agents, each handling a focused sub-task with structured context of 5{,}000--7{,}500 tokens. The ontology reduces the reasoning burden on the small model by telling it what dimensions to prioritise rather than leaving it to figure this out from raw context. The model still struggles with quantitative precision (5.93/10) and occasionally produces weaker answers when the ontological context becomes too complex for simple queries.
+
+\paragraph{Sub-RQ 3: How reliable are LLM-as-a-judge evaluation frameworks for assessing RAG systems in specialised scientific domains, and what are their key limitations?}
+
+They work for detecting relative differences between pipelines when designed carefully. Our initial GPT-4.1-mini framework failed: score saturation (93--99\% at ceiling) made it nearly useless for distinguishing pipeline quality. The revised Claude Sonnet~4.6 framework with eight criteria on a 1--10 scale resolved this, reducing ceiling scores to 5.2\% and detecting significant differences on all six pairwise comparisons. The key limitations are that the judge model has its own biases, context-blind judging cannot verify whether claims are grounded in retrieved documents, and the moderate inter-criterion correlation ($r = 0.65$) means the eight criteria are not fully independent. Framework design (scale, criteria, context handling) matters as much as the choice of judge model.
+
+\paragraph{Sub-RQ 4: Does ontology-based semantic grounding provide significant performance benefits for small-model RAG systems, and to what extent can such an approach generalise to other knowledge-intensive domains beyond Earth observation?}
+
+Yes, the ontology provides a significant benefit: +0.60 overall ($p < 0.001$), with wins on 56 of 70~questions and significant gains on all eight criteria. The largest improvements are on helpfulness (+0.86) and directness (+0.81). The pipeline design is domain-agnostic. The ontology agent is dynamic and the semantic dimensions can be adapted to any domain with structured knowledge, as we discussed in Section~\ref{sec:discuss-generalisability}. Generalisation is structurally supported but not empirically validated. Testing in other domains would require adapted ontology dimensions and a quality retrieval source. We tested on one domain, one knowledge graph, and one model.
+
+
+\section{Future Work}
+\label{sec:future-work}
+
+\paragraph{Full-text indexing.} The knowledge graph currently indexes only abstracts. Indexing full paper text, especially results tables, figure captions, and method sections, would directly address the quantitative precision weakness by giving the pipeline access to specific numbers and measurements.
+
+\paragraph{Adaptive ontology complexity.} For simple factual questions, the full ontology with five dimensions and centrality scores may add unnecessary context. The ontology agent could assess query complexity first and produce a lighter ontology for simpler questions, reducing the risk of context overhead.
+
+\paragraph{Vague query handling.} A query clarification step before ontology generation could handle cases where the user provides a broad or incomplete prompt. If the ontology agent detects that the query is too vague to decompose meaningfully, it could ask for clarification or generate a minimal ontology focusing on the most likely interpretation.
+
+\paragraph{Multi-source retrieval.} The current pipeline depends on a single knowledge graph. Combining it with other sources such as the Copernicus Climate Data Store, NASA Earthdata, or PANGAEA would increase coverage and reduce dependence on one backend.
+
+\paragraph{Domain transfer experiments.} Testing the pipeline on a different domain (e.g., medical or legal question answering) with adapted ontology dimensions and a domain-specific corpus would provide empirical evidence for the generalisability argument made in Chapter~\ref{chap:discussion}.
+
+\paragraph{Cross-model evaluation.} Running the same pipeline architecture with different base models (Llama, Phi, Gemma) would help separate pipeline-level effects from model-specific effects and show whether the ontology benefit holds across model families.
+
+\paragraph{Human expert evaluation.} Evaluating a subset of answers with EO domain experts would validate the LLM-as-a-judge scores and identify cases where automated evaluation and human judgement diverge.
+
+\chapter*{Declaration on Generative AI}
+\addcontentsline{toc}{chapter}{Declaration on Generative AI}
+
+During the preparation of this work, the author used Claude Opus 4.6 for grammar and spelling checks, and occasional prompting to refine specific phrasing or terms for clarity. After using this tool, the author reviewed and edited the content as needed and takes full responsibility for the thesis's content.

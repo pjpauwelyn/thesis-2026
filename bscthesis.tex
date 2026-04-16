@@ -1,0 +1,109 @@
+\documentclass[a4paper]{report}
+
+\usepackage[utf8]{inputenc}       % For setting up the encoding so you can type diacritics, e.g. \'e, \"o.
+\usepackage{geometry}             % For setting the correct papersize.
+\usepackage{natbib}               % Author-year citations with \citep and \citet
+% \bibliographystyle{abbrvnat}
+\usepackage[hidelinks]{hyperref}  % Hyperlinks
+\usepackage{graphicx}             % Images
+\usepackage{rutitlepage}          % Titlepage
+
+% --- Additional packages ---
+\usepackage{booktabs}             % Professional-quality tables (\toprule, \midrule, \bottomrule)
+\usepackage{listings}             % Source code listings
+\usepackage{xcolor}               % Colour support (used by listings and custom commands)
+\usepackage{amsmath}              % Extended maths environments
+\usepackage{amssymb}              % Extended maths symbols
+\usepackage{newtxtext}            % Times Roman text font
+\usepackage{newtxmath}            % Matching math font
+% \usepackage{microtype}          % Uncomment if compile time permits (Overleaf paid plan)
+\usepackage{subcaption}           % Subfigures with \begin{subfigure}
+\usepackage{float}                % Precise figure/table placement with [H]
+\usepackage{tabularx}             % Auto-width table columns
+\usepackage{multirow}             % Multi-row cells in tables
+\usepackage{tikz}                 % PGF/TikZ diagrams
+\usepackage{longtable}            % Tables that span multiple pages (used in appendix)
+
+% --- listings configuration (Python) ---
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{200,200,200}
+\definecolor{codekw}{RGB}{0,112,192}
+\definecolor{codecomment}{RGB}{106,153,85}
+\definecolor{codestring}{RGB}{163,21,21}
+\definecolor{codenumber}{RGB}{128,128,128}
+
+\lstdefinestyle{pythonstyle}{
+  language=Python,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{codekw}\bfseries,
+  commentstyle=\color{codecomment}\itshape,
+  stringstyle=\color{codestring},
+  numberstyle=\tiny\color{codenumber},
+  numbers=left,
+  numbersep=8pt,
+  stepnumber=1,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  tabsize=4,
+  captionpos=b,
+  xleftmargin=1.5em,
+  framexleftmargin=1.5em,
+}
+
+\lstdefinestyle{promptstyle}{
+  language={},
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  captionpos=b,
+  xleftmargin=1em,
+  framexleftmargin=1em,
+}
+
+\lstset{style=pythonstyle}        % Default style is Python
+
+% --- Figure path ---
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\maketitleru[
+authors={Pieterjan Pauwelyn\\s1089656},
+date={\today},
+others={%
+{First supervisor/assessor:}{Prof.\ Dr.\ Arjen de Vries},
+{Second assessor:}{Dr.\ Roxanne El Baff}},
+course={Bachelor's Thesis Computing Science},
+title={Improving RAG Systems for Earth Observation Through Multi-Agent Ontology-Based Generation},
+subtitle={},
+colour,
+]
+
+\input{abstract}
+
+\tableofcontents
+
+\input{introduction}
+\input{relatedwork}      % Chapter 2: Background and Related Work
+\input{preliminaries}    % Chapter 3: Preliminaries and Problem Analysis
+\input{approach}       % Chapters 4: Approach
+\input{evaluation}       % Chapters 5: Evaluation Methodology
+\input{results}        % Chapter 6: Results and Analysis
+\input{discussion}       % Chapter 7: Discussion
+\input{conclusions}      % Chapter 8: Conclusion and Future Work
+
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\appendix
+\input{appendix}
+
+\end{document}

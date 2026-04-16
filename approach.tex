@@ -1,0 +1,462 @@
+\chapter{Approach}
+\label{chap:approach}
+
+\section{Introduction}
+\label{sec:approach-intro}
+
+In Chapter~\ref{chap:preliminaries}, we identified four systematic failure patterns in the baseline pipeline. We traced these to three architectural gaps: there is no structured semantic representation of the query, no mechanism to filter retrieved documents against query-specific requirements, and no guidance for the generator on how to use the context it receives. This chapter presents the ontology-enhanced multi-agent pipeline that addresses each of these gaps.
+
+We introduce three specialised agents that add to the existing knowledge-graph retrieval and two-step generation architecture:
+
+\begin{enumerate}
+\item An \textbf{Ontology Agent} that parses each incoming question into a compact, query-specific ontology spanning the five Earth observation (EO) semantic dimensions;
+\item A \textbf{Refinement Agent} that evaluates retrieved documents against this ontology, synthesises the selected evidence into a structured context, and annotates it with usage guidance and data caveats;
+\item A \textbf{Generation Agent} that produces the final answer in two steps: a zero-shot draft followed by a context-grounded refinement that enforces structure, scope awareness, and quantitative accuracy.
+\end{enumerate}
+
+We begin with the overall architecture and design principles in Section~\ref{sec:system-overview}, then detail each agent in Sections~\ref{sec:ontology-agent}--\ref{sec:generation-agent}.
+
+%% ============================================================
+\section{System Overview}
+\label{sec:system-overview}
+%% ============================================================
+
+\subsection{Design Principles}
+\label{subsec:design-principles}
+
+Four principles guide the architecture.
+
+\begin{description}
+\item[Semantic alignment.] Every stage processes information in relation to the query's structured requirements. The ontology is the shared contract: the Ontology Agent produces it, the Refinement Agent enforces it, and the Generation Agent consults it.
+
+\item[Agent specialisation.] Each LLM call has a single, focused task with a tailored prompt. Keeping each call's scope narrow reduces prompt complexity and improves output predictability, especially for smaller open-source models.
+
+\item[Quantitative and structural fidelity.] Numbers, units, thresholds, and appropriate output formats are preserved across all pipeline stages. This is enforced through explicit prompt instructions at both the refinement and generation stages.
+\end{description}
+
+\subsection{Pipeline Flow}
+\label{subsec:pipeline-flow}
+
+Figure~\ref{fig:pipeline} shows the end-to-end architecture. A query passes through seven steps:
+
+\begin{enumerate}
+\item \textbf{Input.} The user submits an EO question.
+\item \textbf{Ontology Agent.} The question is parsed into a query-specific ontology: 4--8 attribute-value pairs with centrality scores across five semantic dimensions.
+\item \textbf{KG retrieval.} The existing pipeline queries the EO knowledge graph via AQL and returns up to 16~documents (title, abstract, and URI). This step is unchanged from the baseline.
+\item \textbf{Refinement Agent.} The agent receives the question, the ontology, and the AQL documents. It selects the 3--8 most ontology-relevant documents, synthesises their findings into a structured text context, attaches usage guidance and caveats, and enriches references via the OpenAlex API.
+\item \textbf{Generation Agent, Step~1 (draft).} The question alone is sent to the LLM for a zero-shot draft, identical to the baseline's first step.
+\item \textbf{Generation Agent, Step~2 (refinement).} The draft and refined context are combined in a single prompt to produce the final answer.
+\item \textbf{Output.} The final answer with inline citations and a references section.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{pipeline_diagram}
+\caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Grey boxes represent existing DLR baseline components; coloured boxes represent the three new agents.}
+\label{fig:pipeline}
+\end{figure}
+Your compile timed out
+Your project exceeded the compile timeout limit on our free plan.
+
+Upgrade to get more compile time (plus additional collaborators, document history, track changes, and more).
+
+
+Command \showhyphens has changed.
+‪./bscthesis.tex‬
+Reference `lst:prompt-ontology' on page 24 undefined on input line 190.
+‪./approach.tex, 190‬
+Font shape `OMS/ntxtlf/m/it' undefined
+‪./approach.tex‬
+Reference `lst:prompt-refinement' on page 27 undefined on input line 333.
+‪./approach.tex, 333‬
+Reference `lst:prompt-refinement-no-ontology' on page 27 undefined on input line 333.
+‪./approach.tex, 333‬
+Reference `lst:prompt-generation' on page 30 undefined on input line 441.
+‪./approach.tex, 441‬
+Underfull \hbox (badness 10000) in paragraph at lines 88--88
+‪./bscthesis.tex, 88‬
+Underfull \hbox (badness 10000) in paragraph at lines 52--53
+‪./introduction.tex, 52‬
+Overfull \hbox (20.06451pt too wide) in paragraph at lines 182--183
+‪./approach.tex, 182‬
+%% ============================================================
+\section{Ontology Agent}
+\label{sec:ontology-agent}
+%% ============================================================
+
+\subsection{Role and Input/Output}
+\label{subsec:ontology-role}
+
+The Ontology Agent is the first agent in the pipeline and the only one that works entirely independently of the knowledge graph. In a single LLM call, it takes the user's question and returns a \texttt{DynamicOntology} (schema in Appendix~\ref{app:schema-ontology}): a structured set of typed attribute-value pairs representing the question's semantic requirements. The Refinement and Generation Agents use it for document selection, filtering, and scope-aware generation.
+
+The ontology does not capture every aspect of the question. It captures the dimensions along which evidence is either applicable or not. For the question \textit{``How can above-ground biomass in boreal forests be estimated using Sentinel-1 C-band SAR, and what are the main accuracy limitations?''}, the relevant dimensions are the biophysical variable (AGB), the sensor (C-band SAR), the geographic context (boreal forest), and the accuracy concern (C-band saturation).
+
+\subsection{Ontology Structure}
+\label{subsec:ontology-structure}
+
+\subsubsection{Attribute-Value Pairs}
+\label{subsubsec:av-pairs}
+
+Each ontology contains 4 to 8 attribute-value pairs. A pair captures one semantic requirement of the question. The fields are: \emph{attribute} (dimension name), \emph{value} (specific concept), \emph{description} (1--2 sentences contextualising the pair for this question), \emph{centrality score}, and optional \emph{constraints} such as units. Listing~\ref{lst:av-pair-example} shows a representative pair.
+
+\begin{lstlisting}[language={}, caption={Example attribute-value pair for the boreal biomass question.}, label={lst:av-pair-example}]
+
+"attribute": "biophysical_variable",
+"value": "above_ground_biomass",
+"description": "Above-ground biomass density in boreal
+forest stands, the primary target variable.",
+"centrality": 1.0,
+"constraints": ["Mg/ha"]
+
+\end{lstlisting}
+
+\subsubsection{Mandatory Categories}
+\label{subsubsec:mandatory-categories}
+
+The prompt requires coverage of at least four of five mandatory dimensions:
+
+\begin{description}
+\item[Biophysical variable:] What is being measured (e.g., above-ground biomass, Normalised Difference Vegetation Index (NDVI), sea ice extent).
+\item[Sensor/Method:] The observation platform or measurement technique (e.g., Sentinel-2, Synthetic Aperture Radar (SAR) backscatter regression).
+\item[Spatial qualifier:] Geographic scope or resolution (e.g., boreal forest, Arctic, 1~km resolution).
+\item[Temporal qualifier:] Time period or temporal resolution (e.g., decadal trends, 2000--present).
+\item[Application domain:] Scientific purpose (e.g., biomass estimation, climate assessment).
+\end{description}
+
+These five dimensions reflect how EO researchers judge whether a piece of evidence is applicable to their question. When a researcher asks about ``boreal SAR biomass,'' they implicitly need documents that match on variable, sensor, and geographic context. The ontology turns these implicit requirements into an explicit, structured representation.
+
+\subsubsection{Centrality Scoring}
+\label{subsubsec:centrality-scoring}
+
+Each attribute carries a centrality score indicating how critical it is to the question. We use six discrete levels (Table~\ref{tab:centrality-scale}) rather than a binary accept/reject scale. A binary scale cannot represent partial matches: a document may satisfy a centrality-1.0 attribute while missing a centrality-0.5 one, and that distinction matters for deciding whether to include it.
+
+\begin{table}[htbp]
+\centering
+\caption{Six-point centrality scale for ontology attributes.}
+\label{tab:centrality-scale}
+\begin{tabular}{cl}
+\toprule
+Score & Meaning \\
+\midrule
+1.0 & \textbf{Absolutely critical:} answer is impossible without this \\
+0.9 & \textbf{Core mechanism:} primary driver of the answer \\
+0.7 & \textbf{Important enabler:} significantly constrains or enables the answer \\
+0.5 & \textbf{Contextual support:} enriches understanding but not essential \\
+0.3 & \textbf{Background framework:} contextual framing only \\
+0.1 & \textbf{Peripheral:} minimal relevance to the answer \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Multiple attributes can receive 1.0 or 0.9. Pair count scales with complexity: 4--5 pairs for simple definitional questions, 5--6 for standard causal or comparative questions, and 6--8 for complex multi-mechanism questions.
+
+\subsection{Prompt Design}
+\label{subsec:ontology-prompt-design}
+
+The ontology extraction prompt is shown in Listing~\ref{lst:ontology-prompt-excerpt}. Several deliberate design decisions shape its structure.
+
+\begin{lstlisting}[language={}, caption={Key sections of the ontology extraction prompt.}, label={lst:ontology-prompt-excerpt}]
+TASK: Extract semantic attributes from Earth Observation questions
+
+Extract 4-8 attribute-value pairs capturing key concepts
+essential for answering the question.
+Focus on semantic completeness - cover all major scientific
+dimensions mentioned.
+
+MANDATORY CATEGORIES (cover >= 4 of 5):
+1. BIOPHYSICAL_VARIABLE: What's measured?
+2. SENSOR/METHOD: How measured?
+3. SPATIAL_QUALIFIER: Where?
+4. TEMPORAL_QUALIFIER: When?
+5. APPLICATION_DOMAIN: Why?
+
+CENTRALITY SCALE (6-point):
+1.0: ABSOLUTELY CRITICAL
+0.9: CORE MECHANISM
+...
+
+COMPLEXITY TIERS (pair counts are GUIDELINES, not targets):
+Simple questions (typically 4-5 pairs)
+Standard questions (typically 5-6 pairs)
+Complex questions (typically 6-8 pairs)
+
+VALUE SPECIFICITY:
+Good: glacier_velocity, NDVI_anomaly, C-band_saturation
+Bad: change, data, conditions
+
+SEMANTIC VALIDATION CHECKLIST:
+- Does every major scientific concept have an attribute?
+- Are all implied measurement methods captured?
+- Are geographic and temporal constraints represented?
+- Can a domain expert answer using ONLY these pairs?
+
+RETURN ONLY THIS JSON STRUCTURE (valid JSON, no markdown):
+{ "pairs": [{ "attribute": ..., "value": ...,
+"description": ..., "centrality": ... }] }
+\end{lstlisting}
+
+Several design decisions shape the prompt:
+
+\begin{itemize}
+\item \textbf{Pair count by complexity.} Three tiers (simple, standard, complex) with suggested pair counts prevent the model from padding simple questions or under-specifying complex ones.
+\item \textbf{Category coverage.} At least four of five dimensions must be represented, so the question is broken into distinct scientific aspects~\citep{berant2013semantic} rather than treated as a single query string.
+\item \textbf{Specific values.} Contrasting examples (\texttt{glacier\_velocity} vs.\ \texttt{change}) push the model toward values the Refinement Agent can actually match against.
+\item \textbf{Strict JSON output.} A fixed schema ensures the response can be parsed directly without post-processing~\citep{bechard2024reducing}.
+\item \textbf{Validation checklist.} Before returning, the model checks whether a domain expert could answer the question using only the extracted pairs~\citep{wei2022chain}.
+\end{itemize}
+
+The complete prompt is provided in Listing~\ref{lst:ontology-prompt} (Appendix~\ref{app:prompt-ontology}).
+
+\subsection{Example}
+\label{subsec:ontology-example}
+
+Table~\ref{tab:ontology-example} shows the ontology generated for the boreal biomass question from Chapter~\ref{chap:preliminaries}.
+
+\begin{table}[htbp]
+\centering
+\caption{Example ontology for: ``How can above-ground biomass in boreal forests be estimated using Sentinel-1 C-band SAR data, and what are the main accuracy limitations?''}
+\label{tab:ontology-example}
+\begin{tabular}{clllc}
+\toprule
+\# & Category & Attribute & Value & Centrality \\
+\midrule
+1 & Biophysical variable & biophysical\_variable & above\_ground\_biomass & 1.0 \\
+2 & Sensor/Method & sensor\_method & Sentinel-1\_C-band\_SAR & 0.9 \\
+3 & Spatial qualifier & spatial\_qualifier & boreal\_forest & 0.9 \\
+4 & Biophysical variable & accuracy\_limitation & C-band\_saturation & 0.9 \\
+5 & Application domain & application\_domain & biomass\_estimation & 0.7 \\
+6 & Sensor/Method & estimation\_approach & SAR\_backscatter\_regression & 0.7 \\
+7 & Temporal qualifier & temporal\_qualifier & multi-temporal\_analysis & 0.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The target variable (AGB, 1.0), the specific sensor (Sentinel-1 C-band, 0.9), the geographic constraint (boreal forest, 0.9), and the key accuracy concern (C-band saturation, 0.9) all receive high centrality. The temporal qualifier receives 0.5 because the question does not stress any specific time period.
+
+%% ============================================================
+\section{Refinement Agent}
+\label{sec:refinement-agent}
+%% ============================================================
+
+\subsection{Role and Input/Output}
+\label{subsec:refinement-role}
+
+The Refinement Agent sits between knowledge-graph retrieval and answer generation. Its job is to turn raw AQL results into a curated, structured context that the Generation Agent can use directly. It takes three inputs: the user question, the ontology, and the raw AQL documents (title, abstract, URI per document). It returns a plain-text \texttt{enriched\_context} with four labelled sections: an ontology summary, a topics-and-information block, a validated references section, and a caveats-and-gaps section. This output is passed directly to the Generation Agent's prompt without further modification.
+
+In a single LLM call, the agent performs two operations: (1) \emph{selective filtering}, choosing which documents are relevant enough to include, and (2) \emph{structured synthesis}, reorganising selected evidence by topic, tagging each finding with geographic and temporal scope, and attaching per-topic usage instructions. For documents carrying OpenAlex URIs, it also fetches author, year, journal, and DOI metadata via the OpenAlex API to produce complete academic references.
+
+\subsection{Document Assessment}
+\label{subsec:document-assessment}
+
+\subsubsection{Partial Relevance}
+\label{subsubsec:partial-relevance}
+
+In Earth observation, documents are almost never fully relevant or fully irrelevant. A study of SAR biomass in temperate forests is highly relevant for the sensor and variable dimensions but irrelevant for the spatial qualifier \texttt{boreal\_forest}. Instead of a binary accept/reject filter, the agent evaluates each document along the dimensions defined by the ontology. A document that partially matches is included with an explicit geographic caveat; a document that matches no high-centrality attribute is simply left out of all topics. This is especially important in EO because the literature for any given variable-sensor-region combination is sparse. Excluding all partial matches would often leave the context empty.
+
+\subsubsection{Centrality-Weighted Selection}
+\label{subsubsec:centrality-matching}
+
+Ontology attributes are sorted by centrality in descending order before being presented to the model. The prompt tells the model to prefer documents whose titles or opening sentences explicitly mention the highest-centrality attributes. For the boreal biomass query, \texttt{above\_ground\_biomass} (1.0), \texttt{Sentinel-1\_C-band\_SAR} (0.9), and \texttt{boreal\_forest} (0.9) appear at the top of the ontology block. A document about SAR biomass estimation in tropical forests matches the first two but misses the spatial dimension; it may be included with a caveat rather than discarded. Up to 8~documents are selected; if more than 8 match, the most recent are preferred. If fewer than 3 match, all are used and the caveats section records the limited coverage.
+
+\subsection{Usage Guidance}
+\label{subsec:usage-guidance}
+
+For each topic in the refined context, a \texttt{Use} field tells the Generation Agent explicitly how to use the evidence:
+
+\begin{description}
+\item[Primary evidence:] ``Use as main trend estimate; cite directly.''
+\item[Methodological support:] ``Use for methodology only; note study area is temperate Europe.''
+\item[Caveated use:] ``Include with geographic caveat; findings are from tropical forests.''
+\item[Implicit exclusion:] Documents not assigned to any topic are omitted from the context.
+\end{description}
+
+The \texttt{Caveats \& Gaps} section closes the loop by reporting which ontology dimensions are well-supported by the retrieved evidence and which are absent or poorly covered.
+
+\subsection{Prompt Design}
+\label{subsec:refinement-prompt-design}
+
+Listing~\ref{lst:refinement-prompt-excerpt} shows the key sections of the refinement prompt. Its design reflects several techniques used in combination.
+
+\begin{lstlisting}[language={}, caption={Key sections of the refinement prompt.}, label={lst:refinement-prompt-excerpt}]
+INPUT:
+- USER QUESTION: {query}
+- ONTOLOGY (target attributes): {ontology}
+
+AQL RESULTS are numbered; scan from 1 to N and use only
+the 3-8 most ontology-relevant items.
+Prefer items whose title or first 3 sentences explicitly
+mention the key ONTOLOGY attributes.
+If more than 8 match, choose the 3-8 most recent.
+
+- AQL RESULTS: {aql_results}
+
+GENERAL RULES:
+- Use ONLY information from the ONTOLOGY and AQL_RESULTS.
+- Do NOT invent numbers, regions, years, methods, citations.
+- If something is missing, write "Not available in AQL results".
+- Always specify scope (region + time) for quantitative results.
+- Clearly separate regional vs global findings.
+- Organise topics by concept (matching ontology attributes),
+not by document.
+
+OUTPUT FORMAT:
+[ONTOLOGY SUMMARY]
+Critical attributes found: ...
+Supporting attributes found: ...
+
+[TOPICS AND INFORMATION]
+...
+# Topic name
+Findings: 1-2 key findings (quantitative and/or qualitative).
+Evidence: Short citation from AQL.
+Scope: Geographic: {region} | Temporal: {years}.
+Confidence: {0-1} with 1 short reason.
+Limitations: 1-2 specific caveats.
+Use: Instruction for the answer model.
+
+[VALIDATED REFERENCES]
+1. Author et al. (Year). *Title*. URI.
+Scope / Key contribution / Limitations / Use.
+
+[CAVEATS & GAPS]
+Ontology coverage:
+Addressed: ...
+Missing or weak: ...
+Generation guidance:
+Emphasise: 2-3 best-supported concepts.
+Caveat: 1-2 concepts requiring qualification.
+
+RE-SCAN FOCUS: Prioritize matches to
+QUERY {query} and ONTOLOGY {ontology}
+\end{lstlisting}
+
+Several design decisions shape the prompt:
+
+\begin{itemize}
+\item \textbf{Filtering.} Only the 3--8 most ontology-relevant documents are kept~\citep{wang2024filco}, directly addressing the missing usage guidance from Section~\ref{sec:generation-context}.
+\item \textbf{Organisation by topic.} Findings are grouped by scientific concept rather than listed document by document. Each topic carries scope tags, a confidence estimate, and a use instruction for the Generation Agent.
+\item \textbf{Scope tags on numbers.} Every quantitative result must state its geographic and temporal scope, targeting the context-misalignment failure from Section~\ref{subsec:context-misalignment-example}.
+\item \textbf{No invented content.} The prompt prohibits making up numbers, regions, or citations. Missing evidence must be flagged rather than filled in~\citep{bechard2024reducing}.
+\item \textbf{Re-scan at prompt end.} Re-stating the query and ontology at the very end keeps the selection criteria fresh when the model starts generating~\citep{liu2024lost}.
+\item \textbf{No-ontology variant.} For the ablation, the ontology input is replaced with a note that none is provided and the selection criterion changes to ``prefer items directly relevant to the user question.'' Everything else stays identical, so any difference is attributable to the ontology.
+\end{itemize}
+
+The complete prompts for both the ontology-enhanced and no-ontology variants are provided in Listings~\ref{lst:refinement-prompt} and~\ref{lst:refinement-prompt-no-ontology} (Appendix~\ref{app:prompt-refinement} and~\ref{app:prompt-refinement-no-ontology}).
+
+%% ============================================================
+\section{Generation Agent}
+\label{sec:generation-agent}
+%% ============================================================
+
+\subsection{Role and Input/Output}
+\label{subsec:generation-role}
+
+The Generation Agent turns the curated context from the Refinement Agent into a structured, research-quality answer. Its design is intentionally focused. It refines an existing draft using the structured context from the Refinement Agent. The agent follows the baseline's two-step pattern, extended with an enriched Step~2 prompt. In Step~1, the question alone is sent to the LLM to produce a zero-shot draft. In Step~2, this draft is refined using the structured context from the Refinement Agent, producing a final answer with inline citations and a reference list.
+
+The only change is in the Step~2 prompt. The baseline's Step~2 offered minimal guidance; the revised prompt adds explicit rules for integrating the draft with the context, adapting structure to question type, preserving quantitative scope, and grounding citations.
+
+\subsection{Two-Step Generation}
+\label{subsec:two-step-integration}
+
+Step~1 is identical to the baseline: the question is submitted to the LLM without context, and the draft reflects the model's parametric knowledge of the topic. This draft is not shown to the user; it is an internal starting point for the refinement step.
+
+In Step~2, the prompt receives the question, the draft, and the refined context. Five rules govern how the two sources are integrated:
+
+\begin{enumerate}
+\item If the draft and context \emph{agree}, keep and optionally enrich.
+\item If they \emph{conflict}, align with the context, especially for numbers, regions, and time windows.
+\item If important evidence is \emph{in the context but absent from the draft}, add it if it clearly helps answer the question.
+\item If material is \emph{in the draft but not in the context}, retain it only if it is standard, well-established background; otherwise remove it or mark it as tentative.
+\item When \emph{multiple context items} report related findings, synthesise explicitly (``Several studies show\ldots'') with numeric citations, rather than listing each document separately.
+\end{enumerate}
+
+This ordering ensures that retrieved, scope-tagged evidence dominates quantitative claims and geographic context, while the draft contributes general background that the retrieval corpus may not cover. Retrieved, scope-tagged evidence takes priority over parametric knowledge for specifics; parametric knowledge fills in established background~\citep{lewis2020retrieval}.
+
+\subsection{Prompt Design}
+\label{subsec:generation-prompt-design}
+
+Listing~\ref{lst:generation-prompt-excerpt} shows the key sections of the generation refinement prompt. The design addresses each of the four failure patterns from Chapter~\ref{chap:preliminaries}.
+
+\begin{lstlisting}[language={}, caption={Key sections of the generation refinement prompt.}, label={lst:generation-prompt-excerpt}]
+Most important rules (follow even if other instructions conflict):
+- Base all key claims primarily on the provided CONTEXT.
+- If draft and CONTEXT conflict, prefer CONTEXT for numbers,
+regions, and time windows.
+- Do not invent or modify quantitative values that contradict
+the CONTEXT.
+- Match the complexity and depth of the answer to the question.
+
+### YOUR DRAFT ANSWER
+- Question: {question}
+- Draft Answer: {draft_answer}
+...
+### CONTEXT
+{context}
+
+RE-SCAN FOCUS: Remember the QUERY {question}
+
+STRUCTURE:
+- Begin with a short direct answer (2-4 sentences).
+- Then add 2-4 sections with headings matched to question type:
+"Key concepts" / "Definition" for 'what is' questions
+"Main mechanisms" / "Impacts" for 'how/why' questions
+"Comparison of X and Y" for comparison questions
+- For comparison questions, include ONE comparison table.
+- Add "Uncertainties and limitations" when caveats apply.
+- End with "Implications" when modelling or policy relevance
+is clear.
+
+USE OF NUMBERS:
+- For any quantitative value from CONTEXT, always specify:
+* geographic scope (e.g., "Hindu Kush Himalaya, 27-37N")
+* temporal scope (e.g., "2000-2024")
+- If the question is GENERAL: keep the narrative global;
+use regional details only as clearly labelled examples.
+- If the question is SPECIFIC to a region: focus there;
+use global context only as background.
+
+CITATIONS:
+- Insert numeric markers [1], [2] for key claims from CONTEXT.
+- Do NOT fabricate or hallucinate references.
+- Add a References section at the end using the exact format
+from [VALIDATED REFERENCES].
+
+STYLE:
+- Do NOT copy internal context headers or pipeline metadata.
+- Be informative but not verbose; avoid restating the same
+numbers or phrases.
+\end{lstlisting}
+
+Several design decisions shape the prompt, each targeting a failure from Chapter~\ref{chap:preliminaries}:
+
+\begin{itemize}
+\item \textbf{Important rules first.} Grounding and conflict-resolution rules appear at the very top of the prompt, before any input, so the model reads them first~\citep{liu2024lost}.
+\item \textbf{Re-scan between draft and context.} A line re-stating the query sits between the draft and the context block, keeping the question fresh when the model moves into the long context~\citep{liu2024lost}.
+\item \textbf{Structure matched to question type.} Comparison questions get a table, causal questions get reasoning steps, definitional questions get a key-concepts section~\citep{wei2022chain}. This replaces the baseline's uniform paragraph format (Section~\ref{subsec:poor-structure-example}).
+\item \textbf{Direct opening.} The answer must start with 2--4 sentences that answer the question, targeting the delayed-directness failure (Section~\ref{subsec:delayed-answers-example}).
+\item \textbf{Scope on every number.} Every quantitative value must carry its geographic and temporal scope. The Refinement Agent tags them; the Generation Agent must keep those tags.
+\item \textbf{Uncertainty where needed.} Caveats from the \texttt{[CAVEATS \& GAPS]} section are carried into the answer, targeting the context-misalignment failure (Section~\ref{subsec:context-misalignment-example}).
+\item \textbf{Citations from context only.} References use only entries from the Refinement Agent's \texttt{[VALIDATED REFERENCES]}. Made-up citations are prohibited~\citep{lewis2020retrieval}.
+\end{itemize}
+
+The complete generation refinement prompt is provided in Listing~\ref{lst:prompt-generation} (Appendix~\ref{app:prompt-generation}).
+
+%% ============================================================
+\section{Pipeline Integration}
+\label{sec:pipeline-integration}
+%% ============================================================
+
+The three agents integrate into the existing pipeline at clearly defined boundaries. The Ontology Agent is inserted \emph{before retrieval}: it receives the raw question and produces the ontology, but does not modify the AQL query itself. The Refinement Agent is inserted \emph{after retrieval, before generation}: it replaces the baseline's direct forwarding of the parsed original context (presented previously in Section~\ref{sec:generation-context}). The Generation Agent replaces only the Step~2 refinement prompt; Step~1 remains unchanged from the baseline.
+
+A single query uses four LLM calls: one for ontology construction, one for context refinement, and two for generation (draft and refinement). The baseline uses two. Per-query token usage across all agents ranges from 5{,}000 to 7{,}500 tokens, comfortably within the context window of Mistral Small 24B.
+
+%% ============================================================
+\section{Expected Improvements}
+\label{sec:hypothesis}
+%% ============================================================
+
+Based on the failure analysis in Chapter~\ref{chap:preliminaries} and the literature on LLM context utilisation, we expect the largest gains on \textbf{directness} and \textbf{scope awareness}. The prompt improvements target these two criteria most directly: directness through the opening-answer mandate, and scope awareness through the ontology's spatial and temporal qualifiers combined with the Refinement Agent's scope-tagging. As shown in Chapter~\ref{chap:preliminaries}, the baseline's retrieval step actively hurts directness (dropping from 6.67 zero-shot to 4.59 with context), suggesting that structured guidance is needed for retrieval to improve directness rather than degrade it.
+
+We also expect gains on response structure and scientific accuracy. Quantitative precision should improve but will likely remain the hardest criterion, since it depends on whether the source abstracts actually contain specific numbers. We return to this in the results discussion.
+
+The no-ontology variant serves as the primary ablation: if the ontology-enhanced pipeline outperforms it, the improvement is attributable to ontology-guided semantic reasoning rather than to the general prompt improvements both variants share. The next chapter describes the evaluation methodology.

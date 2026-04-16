@@ -1,0 +1,162 @@
+\chapter{Preliminaries and Problem Analysis}
+\label{chap:preliminaries}
+
+\section{Introduction}
+\label{sec:prelim-intro}
+
+We covered RAG architectures, ontologies, and multi-agent systems and reviewed their literature. In this chapter we evaluate the performance of the baseline pipeline~\citep{elbaff2025earthobservationrag} and analyse where it falls short. We describe how we tested it (\S\ref{sec:testing-methodology}), introduce the four recurring failure patterns with examples (\S\ref{sec:failure-patterns}), look at the retrieval context the generation agent receives (\S\ref{sec:generation-context}), trace the failures to their likely root causes (\S\ref{sec:root-causes}), and lay out the design decisions (\S\ref{sec:design-decisions}) behind the multi-agent ontology-enhanced approach described in Chapter~\ref{chap:approach}.
+
+%% ============================================================
+\section{Testing Methodology}
+\label{sec:testing-methodology}
+%% ============================================================
+
+We tested answer quality by manually inspecting responses to a set of specialised Earth Observation (EO) questions across different question types and complexity levels. Our background in forestry and remote sensing let us evaluate the answers critically, placing the baseline's responses side by side with those from large proprietary models. On harder questions, we re-prompted with more specific instructions to see whether each model could recover.
+
+\subsection{Question Design}
+\label{subsec:question-design}
+
+We wrote 30~questions on forestry and remote sensing (listed in Appendix~\ref{app:analysis-questions}). Twenty fell across five categories: Explanatory, Comparative, Descriptive, Causal, and Relational. They ranged from basic factual questions to queries that demand causal reasoning across multiple mechanisms or integration of evidence from several domains. The remaining ten were highly technical, domain-specific questions that did not fit neatly into a single category. Some questions were intentionally straightforward, ones a domain-specific RAG system should handle well. Failures there are the clearest indicator of a fundamental problem.
+
+\subsection{Comparative Evaluation}
+\label{subsec:comparative-approach}
+
+We compared three models:
+
+\begin{itemize}
+\item The baseline model: the two-step RAG pipeline with knowledge graph developed by~\citet{elbaff2025earthobservationrag}.
+\item OpenAI's GPT-5.1.
+\item Anthropic's Claude Sonnet 4.5.
+\end{itemize}
+
+The comparison was qualitative. We read answers side-by-side and judged whether each was genuinely helpful, how the response was structured and what level of detail it reached. For specialised questions, we went further and inspected the cited sources directly.
+
+When we spotted a failure mode, we re-prompted all three models with the same question but a better prompt. If an answer lacked directness, we asked for directness. If it mixed contexts, we asked the models to separate general from context-specific statements. This told us whether a failure was inherent to the model or just a matter of better prompting.
+
+Clear patterns emerged after we had reviewed all 30~questions and re-iterated the problematic ones. The baseline produced the most inconsistent answers and barely improved under better prompts. Some of its answers had several shortcomings at once; others were acceptable. The proprietary models showed weaknesses too, but these were minor and could be fixed with the improved prompt. We refined four failure categories iteratively: patterns emerged from the first ten, and the remaining twenty confirmed they were not isolated cases.
+
+%% ============================================================
+\section{Failure Patterns}
+\label{sec:failure-patterns}
+%% ============================================================
+
+Each of the four patterns below is illustrated with a representative question, the baseline's answer, an analysis of what went wrong, and what the answer should have looked like.
+
+\subsection{Delayed Direct Answers}
+\label{subsec:delayed-answers-example}
+
+\paragraph{Question.} \textit{``What satellite sensors can be used to monitor vegetation health?''}
+
+\paragraph{Baseline behaviour.} The model produced roughly 600~words on vegetation indices, spectral analysis, and imaging techniques before naming a single sensor. When sensors finally appeared, the answer read: ``Space-based sensors, such as those on the MODIS, Sentinel, Landsat, and WorldView series of satellites, provide a continuous and global perspective on vegetation health.'' Sensor details accounted for less than 30\% of the total output. Everything else was background material that, while related, did not answer the question.
+
+\paragraph{Expected behaviour.} Sensors and their key characteristics should come first. Background on vegetation indices and spectral analysis can follow, but not as a preamble.
+
+\paragraph{Why this matters.} EO researchers use these answers when they need a quick answer or to confirm a sensor choice they have already made. Burying that answer under background material wastes their time and makes the system less useful than a search engine. The proprietary models named sensors in their opening sentence and then elaborated on each. That difference in directness held across the entire question set.
+
+\subsection{Missing Quantitative Precision}
+\label{subsec:missing-precision-example}
+
+\paragraph{Question.} \textit{``How do optical and radar sensors compare for forest monitoring?''}
+
+\paragraph{Baseline behaviour.} The answer contained statements like: ``Saturation issues: Some optical sensors, such as the Altum, may saturate in certain bands when viewing bright reflectance panels, which can limit their effectiveness in specific applications.'' Three things are vague here: ``certain bands'' does not say which bands, ``may saturate'' gives no threshold, and ``specific applications'' is left undefined. The cited paper contains all of these details. None of it made it into the answer.
+
+\paragraph{Expected behaviour.} The answer should present the specific numbers from the source material. Which bands? At what reflectance levels? Under which conditions? Scientists need thresholds, metrics, and units. The level of quantitative detail should match the specificity of the question.
+
+\paragraph{Why this matters.} For a researcher designing a monitoring campaign, the gap between ``may saturate'' and ``saturates above 0.8 reflectance in the NIR band'' is the difference between a vague caution and something a researcher can act on.
+
+\subsection{Poor Response Structure}
+\label{subsec:poor-structure-example}
+
+\paragraph{Question.} \textit{``How does GEDI lidar compare to Sentinel-1 SAR in boreal forests?''}
+
+\paragraph{Baseline behaviour.} The answer used paragraphs under headings like ``Data Characteristics,'' ``Accuracy,'' and ``Combination of Data Sources,'' but never offered a side-by-side comparison. GEDI information and Sentinel-1 information appeared mixed without clear separation. Key metrics such as RMSE, spatial resolution, and coverage appeared scattered across paragraphs rather than presented together. We had to mentally reconstruct which claims applied to which sensor.
+
+\paragraph{Expected behaviour.} A comparison question calls for a structured comparison: a table with key attributes side by side, followed by a short discussion of the trade-offs. Both proprietary models produced this format naturally.
+
+\paragraph{Why this matters.} Comparison questions are common in EO research. In scientific contexts, comparisons are typically presented as tables, and researchers expect the output format to match the question type. Unstructured paragraphs make the answer harder to use and harder to verify.
+
+\subsection{Context Misalignment}
+\label{subsec:context-misalignment-example}
+
+\paragraph{Question.} \textit{``How does the accuracy of above-ground biomass estimation compare between GEDI lidar data and Sentinel-1 SAR backscatter in boreal forests?''}
+
+This is the most concerning example because it shows how multiple shortcomings compound into a misleading answer.
+
+\paragraph{Baseline behaviour.} The model reported: ``Sentinel-1/Sentinel-2 fusion achieved R\textsuperscript{2} 0.79 to 0.84 and RMSE 7.97 to 29.42 Mg/ha.'' Those values come from a study on Japanese temperate coniferous forests, but the answer did not flag this. A reader would reasonably assume the metrics apply to boreal forests, since that is what the question asked about. The answer said nothing about boreal-specific factors.
+
+\paragraph{Cascading failure.} We re-prompted with explicit instructions to distinguish general from boreal-specific statements. The answer still failed. It spent about 500~words on background before reaching a boreal forests subsection (delayed directness). That subsection opened with a general claim that ``higher RMSE values are often observed'' for above-ground biomass, then cited a study and reported RMSE values for terrain elevation and canopy height, which are metrics unrelated to biomass (context misalignment). The same subsection referenced the Japanese coniferous forest study again without noting its geographic scope (context misalignment). The study does report RMSE values for above-ground biomass in temperate forests, but the model did not extract them (missing quantitative precision). The resulting subsection amounted to unsupported claims built on evidence from an out-of-scope study and irrelevant metrics.
+
+\paragraph{Why this matters.} This is the most dangerous failure type. An EO researcher relying on this answer could set inaccurate accuracy expectations, choose inappropriate models, or overlook critical constraints. Failing to distinguish geographic contexts produces answers that are topically plausible but scientifically wrong. Relevance to a topic is not the same as relevance to a specific context.
+
+%% ============================================================
+\section{Baseline Context Analysis}
+\label{sec:generation-context}
+%% ============================================================
+
+In the baseline two-step pipeline, the retrieval stage returns up to 16~documents, but only a subset, sometimes as few as one, reaches the generation agent. The context arrives as a list of related documents, each with a title and a content snippet, followed by a section of related topic descriptions. Figure~\ref{fig:context-example} shows a representative example.
+
+\begin{figure}[htbp]
+\centering
+\fbox{\begin{minipage}{0.92\linewidth}\small
+\textbf{\# RELATED DOCUMENTS}\\[4pt]
+\textbf{- Title:} GEOMAGNETIC FIELD AND SECULAR VARIATIONS OF THE ASTRONOMICAL PARAMETERS\\
+\textbf{- Content:} Latest developments and techniques in paleomagnetic research led to obtain more accurate data for geomagnetic variations in direction as well as in intensity in the geological past. Geomagnetic excursions are associated with a dramatic reduction in the intensity of the magnetic field\ldots\\[4pt]
+\rule{\linewidth}{0.4pt}\\[4pt]
+\textbf{- Title:} EARTHQUAKES AND GEOMAGNETIC DISTURBANCES\\
+\textbf{- Content:} The article addresses the problem of the connection of earthquakes with geomagnetic phenomena. We have carried out an experimental study using a method based, firstly, on the separation of periods of geomagnetic activity\ldots\\[4pt]
+\rule{\linewidth}{0.4pt}\\[4pt]
+\textbf{\# RELATED TOPICS\textquotesingle{} DESCRIPTIONS}\\[4pt]
+\textbf{Topic:} GEOMAGNETIC ACTIVITY\\
+\textbf{Description:} Natural variations in the geomagnetic field classified into quiet, unsettled, active, and geomagnetic storm levels.
+\end{minipage}}
+\caption{Representative context passed to the generation agent. The context includes per-document titles and content snippets, as well as topic-level descriptions. The format gives no indication of how closely each document matches the query's specific context.}
+\label{fig:context-example}
+\end{figure}
+
+The per-document structure and topic descriptions help, but the context still fails the generation agent in the ways that matter most:
+
+\begin{description}
+\item[Low document surfacing rate.] The retrieval stage returns up to 16~documents, yet the context frequently contains far fewer. The generation agent then works from a small set of documents, which means its answer may reflect the scope or biases of a single study.
+
+\item[No usage guidance.] There is no signal indicating whether a document matches the query's specific conditions or merely shares its topic. The generation agent is left to infer relevance, and it does so inconsistently.
+
+\item[Abstract-level summaries only.] The content field typically holds a paper's partial abstract. Detailed quantitative results, methodological specifics, and study-area descriptions are absent. The numbers that matter are simply not in the agent's input. This is an issue that will persist in our pipeline.
+
+\item[No cross-document synthesis.] Documents appear as a flat, unordered list. There is no indication of which documents agree, which conflict, or which address complementary parts of the question.
+
+\item[Missing scope metadata.] Documents carry no metadata about geographic scope, temporal range, or sensor type. Without this, the generation agent cannot judge whether a study's findings transfer to the query's specific context.
+\end{description}
+
+The generation agent is asked to produce context-aware answers from input that is neither structured nor context-aware. Even a larger language model would struggle to reliably distinguish boreal from temperate forest studies when the context provides only an abstract snippet and a title. The failures we documented in \S\ref{sec:failure-patterns} are therefore not just about the generation model's capabilities; they are, in large part, a result of the limited context it receives.
+
+Unlike the baseline, the context passed to the generation agent is filtered against the query's semantic requirements rather than assembled by similarity alone.
+
+%% ============================================================
+\section{Root Cause Analysis}
+\label{sec:root-causes}
+%% ============================================================
+
+The failure patterns and context limitations are not independent problems. They come from architectural gaps that compound across pipeline stages. We have not verified each root cause in isolation, but they follow directly from the failure patterns and context limitations documented above. They directly informed our design choices.
+
+\paragraph{Retrieval.} The baseline relies on vector similarity and lexical matching. This returns documents that are on-topic but not necessarily on-context. Standard embedding models do not capture the fine-grained dimensions domain experts apply implicitly. Two documents may appear equally relevant in embedding space while being contextually incompatible. Similarity does not imply semantic fit.
+
+\paragraph{Filtering.} The baseline applies no secondary filtering after retrieval. All returned documents are treated as equally relevant, with no mechanism to distinguish fully applicable sources from somewhat related ones. Of the documents retrieved, only a fraction reach the generation model. Those that do arrive as abstract-level snippets, not the quantitative detail or scope metadata the agent would need.
+
+\paragraph{Generation.} The generation prompt lacks several forms of awareness. It does not separate context that matches the query's specific conditions from context that applies elsewhere. It does not adapt output format to question type. Numbers from source documents get paraphrased into vague qualifiers. Scope limitations are silently dropped. The most telling evidence: the baseline performs \emph{worse} with retrieved context than without it on two criteria. Relevance drops from 7.6 (zero-shot) to 6.6 (two-step), and structure drops from 7.30 to 5.90. More context, without guidance on how to use it, makes the answers longer and less direct.
+
+\paragraph{No semantic checkpoints.} The common thread across all three levels is the absence of semantic checkpoints. No component verifies that the information entering the next stage matches the query's structured semantic requirements. This is the fundamental gap.
+
+%% ============================================================
+\section{Design Decisions}
+\label{sec:design-decisions}
+%% ============================================================
+
+The root cause analysis points to three architectural gaps: no structured representation of what the query needs, no filtering of retrieved documents against those needs, and no guidance to the generator on how to use the context it receives.
+
+\paragraph{Query-adaptive ontologies.} For each question, we generate a lightweight ontology: a set of typed attributes (spatial scope, temporal scope, sensor, biophysical variable, application domain), each assigned an importance score. A static, pre-built ontology covering all of EO would be large, difficult to maintain, and blind to query-specific importance. Our ontologies are generated dynamically and contain only the attributes relevant to the current question. The ontology is a structured semantic representation of the question, generated by the LLM from natural language~\citep{berant2013semantic}.
+
+\paragraph{Multi-agent architecture.} \citet{liu2024lost} showed that LLMs struggle to use information in long contexts, especially material buried in the middle of the input. We split the work across three specialised agents, each with a focused task and a tailored prompt. The Ontology Agent handles semantic parsing, the Refinement Agent handles document evaluation and filtering, and the Generation Agent handles answer composition. Each boundary acts as a checkpoint: the ontology can be inspected before it guides refinement, and the refined context is an explicit, verifiable input to generation. Agents can also be improved or replaced independently without touching the rest of the pipeline~\citep{pan2023multiagent, zhao2025marag}.
+
+\paragraph{Extension over replacement.} The problems do not lie in the retrieval mechanism itself. The knowledge graph is a valuable asset containing curated EO publications, and the two-step generation pattern is well-motivated. What is missing is semantic guidance around retrieval and generation. We therefore extend the existing baseline pipeline rather than replacing it. The knowledge graph, ArangoDB Query Language (AQL) retrieval, and two-step architecture remain unchanged.
+
+This next chapter presents the full pipeline design.

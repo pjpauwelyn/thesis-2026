@@ -1,0 +1,812 @@
+% Appendix
+% BSc Thesis: Improving RAG Systems for Earth Observation
+% Through Multi-Agent Ontology-Based Retrieval
+% Author: Pieterjan Pauwelyn
+
+\chapter{Problem Analysis Questions}\label{app:analysis-questions}
+
+This appendix lists the 30 domain-specific questions used for the manual
+problem analysis in Chapter~\ref{chap:preliminaries}. Twenty questions
+span five intent categories; the remaining ten are highly technical
+questions that do not fit a single category.
+
+\medskip
+\noindent\textbf{Exploratory questions}
+\begin{itemize}
+\item ``What satellite sensors can be used to monitor vegetation health?''
+\item ``How can synthetic aperture radar detect selective logging activities in tropical forests during the rainy season?''
+\item ``What combination of lidar metrics and hyperspectral indices best characterizes understory vegetation diversity in temperate mixed forests?''
+\end{itemize}
+
+\noindent\textbf{Comparative questions}
+\begin{itemize}
+\item ``How do optical and radar sensors compare for forest monitoring?''
+\item ``How does the accuracy of above-ground biomass estimation compare between GEDI lidar data and Sentinel-1 SAR backscatter in boreal forests?''
+\item ``Compare the performance of random forest versus deep learning approaches for tree species classification using WorldView-3 imagery in mixed deciduous forests.''
+\end{itemize}
+
+\noindent\textbf{Descriptive questions}
+\begin{itemize}
+\item ``What is NDVI and how is it used in vegetation monitoring?''
+\item ``Explain the role of the Hansen Global Forest Change dataset in monitoring tropical deforestation patterns.''
+\item ``Describe how full-waveform lidar data characterizes vertical forest structure for biodiversity assessment in old-growth forests.''
+\end{itemize}
+
+\noindent\textbf{Causal questions}
+\begin{itemize}
+\item ``Why does forest fire detection use thermal infrared bands?''
+\item ``How do edge effects influence carbon stock estimates in fragmented forests when using medium-resolution satellite data?''
+\item ``Why do L-band SAR systems show better correlation with forest biomass than C-band in high-biomass tropical forests, and what are the physical mechanisms behind signal saturation?''
+\end{itemize}
+
+\noindent\textbf{Relational questions}
+\begin{itemize}
+\item ``What is the relationship between canopy cover and land surface temperature?''
+\item ``How does the timing of Sentinel-2 image acquisition relate to phenological stages for deciduous forest species mapping?''
+\item ``What is the relationship between interferometric coherence from Sentinel-1 and forest disturbance severity in managed forests?''
+\end{itemize}
+
+\noindent\textbf{Additional domain-specific questions}
+\begin{itemize}
+\item ``What are the specific advantages of using Sentinel-2's red-edge bands for forest health assessment?''
+\item ``How would you design a multi-sensor approach to map forest degradation in a tropical rainforest with persistent cloud cover?''
+\item ``What are the limitations of using the Hansen Global Forest Change dataset for monitoring forest degradation in dry tropical forests?''
+\item ``How does canopy height from GEDI lidar data relate to carbon sequestration estimates, and what are the uncertainties?''
+\item ``What specific Earth observation data and processing steps would you need to create a monthly forest fire risk map for Mediterranean forests?''
+\item ``How do phenological variations affect the accuracy of tree species classification using Sentinel-2, and how would you account for this?''
+\item ``What is the minimum detectable change in forest canopy cover using Landsat time series analysis?''
+\item ``How can Planet's daily imagery be integrated with Sentinel-2 for near real-time deforestation alerts?''
+\item ``What are the key spectral and structural indicators for detecting forest insect outbreak damage using multispectral and SAR data?''
+\item ``Explain how GLAS/ICESat-2 altimetry data can be used to validate canopy height models derived from optical stereo imagery.''
+\item ``What role does texture analysis play in distinguishing primary forest from secondary regrowth in high-resolution satellite imagery?''
+\item ``How can interferometric SAR coherence time series detect gradual forest degradation that optical sensors might miss?''
+\item ``What are the optimal seasonal windows for acquiring satellite imagery to map invasive species in temperate forests?''
+\item ``How do you account for topographic effects when calculating vegetation indices in mountainous forest areas?''
+\item ``What is the relationship between SAR backscatter seasonal variation and forest water stress in Mediterranean ecosystems?''
+\end{itemize}
+
+\chapter{Evaluation Criteria Definitions}\label{app:eval-criteria}
+
+Table~\ref{tab:eval-criteria-full} defines the eight criteria used by the
+final LLM-as-a-judge evaluation framework (Claude Sonnet~4.6). Each criterion
+is described by a guiding question and four score bands spanning the 1--10
+scale. See Chapter~\ref{chap:evaluation} for the rationale behind each
+criterion and its connection to the failure patterns identified in
+Chapter~\ref{chap:preliminaries}.
+
+\begin{longtable}{@{}p{2.6cm} p{4.0cm} p{1.2cm} p{6.0cm}@{}}
+\caption{Evaluation criteria, guiding questions, and score-band
+descriptions used in the final LLM-as-a-judge framework.}
+\label{tab:eval-criteria-full} \\
+\toprule
+\textbf{Criterion} & \textbf{Guiding question} & \textbf{Band} & \textbf{Description} \\
+\midrule
+\endfirsthead
+
+\multicolumn{4}{c}{\small\emph{Table~\ref{tab:eval-criteria-full} continued}} \\
+\toprule
+\textbf{Criterion} & \textbf{Guiding question} & \textbf{Band} & \textbf{Description} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+% scientific accuracy
+\multirow{4}{2.6cm}{Scientific Accuracy}
+& \multirow{4}{4.0cm}{Are the scientific claims factually correct?}
+& 1--3 & Major factual errors that undermine the answer. \\
+& & 4--5 & Mostly correct with noticeable inaccuracies. \\
+& & 6--7 & Correct with minor imprecisions. \\
+& & 8--10 & Fully correct; all claims are verifiable and accurate. \\
+\midrule
+
+% relevance
+\multirow{4}{2.6cm}{Relevance}
+& \multirow{4}{4.0cm}{Does the answer address what was asked?}
+& 1--3 & Off-topic; does not address the question. \\
+& & 4--5 & Partially addresses the question. \\
+& & 6--7 & Addresses the question with minor tangential content. \\
+& & 8--10 & Precisely targeted to the question. \\
+\midrule
+
+% completeness
+\multirow{4}{2.6cm}{Completeness}
+& \multirow{4}{4.0cm}{Are all aspects of the question covered?}
+& 1--3 & Major gaps; key aspects are missing. \\
+& & 4--5 & Covers some aspects but omits important ones. \\
+& & 6--7 & Covers most aspects with minor omissions. \\
+& & 8--10 & Comprehensive; all aspects addressed. \\
+\midrule
+
+% directness
+\multirow{4}{2.6cm}{Directness}
+& \multirow{4}{4.0cm}{Is the key point stated upfront or buried?}
+& 1--3 & Key point buried after 200$+$ words of preamble. \\
+& & 4--5 & Takes too long to reach the core answer. \\
+& & 6--7 & Reasonably direct with moderate lead-in. \\
+& & 8--10 & Key answer stated clearly within the first few sentences. \\
+\midrule
+
+% quantitative precision
+\multirow{4}{2.6cm}{Quantitative Precision}
+& \multirow{4}{4.0cm}{Are specific numbers included where relevant?}
+& 1--3 & No quantitative details despite relevance. \\
+& & 4--5 & Vague references to numbers (e.g.\ ``some studies show\ldots''). \\
+& & 6--7 & Some specific values provided. \\
+& & 8--10 & Rich in quantitative detail (rates, ranges, dates, areas). \\
+\midrule
+
+% response structure
+\multirow{4}{2.6cm}{Response Structure}
+& \multirow{4}{4.0cm}{Is the format appropriate for the content?}
+& 1--3 & Wall of text; no structure. \\
+& & 4--5 & Basic paragraphs with minimal organisation. \\
+& & 6--7 & Decent organisation with headings or bullets where helpful. \\
+& & 8--10 & Optimal structure for the question type. \\
+\midrule
+
+% scope awareness
+\multirow{4}{2.6cm}{Scope Awareness}
+& \multirow{4}{4.0cm}{Are limitations and boundaries acknowledged?}
+& 1--3 & No qualification; presents universal claims without caveats. \\
+& & 4--5 & Minimal acknowledgement of scope limits. \\
+& & 6--7 & Some caveats mentioned. \\
+& & 8--10 & Explicitly flags data gaps, regional limits, or temporal bounds. \\
+\midrule
+
+% helpfulness
+\multirow{4}{2.6cm}{Helpfulness}
+& \multirow{4}{4.0cm}{Is the answer actionable for researchers?}
+& 1--3 & Not useful; vague or misleading. \\
+& & 4--5 & Provides a basic overview only. \\
+& & 6--7 & Useful with some actionable information. \\
+& & 8--10 & Highly actionable; clearly advances the reader's understanding. \\
+\bottomrule
+\end{longtable}
+
+\chapter{Initial Evaluation Criteria}\label{app:initial-criteria}
+
+Table~\ref{tab:initial-criteria-full} lists the five criteria used in
+the initial GPT-4.1-mini evaluation framework described in
+\S\ref{sec:initial-framework}. These criteria were modelled after the
+evaluation framework of~\citet{elbaff2025earthobservationrag} to ensure
+comparability with prior results. Each criterion was scored on a 1--5
+integer scale.
+
+\begin{table}[htbp]
+\centering
+\caption{Criteria and definitions used in the initial GPT-4.1-mini evaluation framework.}
+\label{tab:initial-criteria-full}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Criterion} & \textbf{Definition} \\
+\midrule
+Factuality & Accuracy of scientific claims made in the answer. \\
+Relevance & Alignment of the answer with the question's intent. \\
+Groundedness & Degree to which claims are supported by the provided context and sources. \\
+Helpfulness & Practical value of the answer for a domain researcher. \\
+Depth & Level of technical detail and completeness of the response. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+As discussed in Chapter~\ref{chap:evaluation}, this configuration
+produced score ceiling saturation (93\% of DLR two-step scores and 99\%
+of ontology-enhanced scores at the maximum of~5) and lacked criteria
+targeting the four failure patterns identified in
+Chapter~\ref{chap:preliminaries}. These limitations motivated the
+transition to the eight-criterion Claude Sonnet~4.6 framework
+(Appendix~\ref{app:eval-criteria}).
+
+\chapter{Agent Prompts}\label{app:prompts}
+
+This appendix reproduces the full system prompts used by the three agents.
+Template placeholders written in braces (e.g.\ \texttt{\{question\}}) are filled at
+runtime. The prompts are referenced from Chapter~\ref{chap:approach}; the design
+choices behind each prompt are discussed in the corresponding Prompt Design
+subsections there.
+
+\section{Ontology Agent Extraction Prompt}\label{app:prompt-ontology}
+
+Used by the Ontology Agent to extract 4--8 attribute-value pairs from the user question.
+Referenced in Section~\ref{subsec:ontology-prompt-design}.
+
+\begin{lstlisting}[style=promptstyle,
+caption={Ontology Agent extraction prompt (full).},
+label={lst:ontology-prompt}]
+TASK: Extract semantic attributes from Earth Observation questions
+
+Extract 4-8 attribute-value pairs capturing key concepts essential for answering the question.
+Focus on semantic completeness - cover all major scientific dimensions mentioned.
+
+MANDATORY CATEGORIES (cover >=4 of 5):
+1. BIOPHYSICAL_VARIABLE: What's measured? (glacier_retreat, sea_ice_extent, albedo, carbon_flux)
+2. SENSOR/METHOD: How measured? (Sentinel-2, MODIS, SAR, time_series_analysis)
+3. SPATIAL_QUALIFIER: Where? (global, polar_regions, 1km_resolution)
+4. TEMPORAL_QUALIFIER: When? (decadal_trends, 1990-present, seasonal_cycle)
+5. APPLICATION_DOMAIN: Why? (climate_assessment, ecosystem_monitoring)
+
+CENTRALITY SCALE (6-point):
+- 1.0: ABSOLUTELY CRITICAL (answer impossible without this)
+- 0.9: CORE MECHANISM (primary driver of answer)
+- 0.7: IMPORTANT ENABLER (significantly constrains/enables)
+- 0.5: CONTEXTUAL SUPPORT (enriches but not essential)
+- 0.3: BACKGROUND FRAMEWORK (contextual framing)
+- 0.1: PERIPHERAL (minimal value)
+
+QUESTION
+{question}
+
+SEMANTIC COMPLETENESS GUIDANCE (CRITICAL)
+
+Focus on COMPLETE semantic coverage, NOT arbitrary pair counts.
+Extract ALL distinct concepts needed to fully answer the question.
+
+COMPLEXITY TIERS (pair counts are GUIDELINES, not targets):
+
+Simple questions (typically 4-5 pairs):
+Example: "What is albedo?"
+- Core concept (1.0): albedo
+- Measurement approach (0.9): satellite_observation
+- Temporal context (0.7): seasonal_variation
+- Application (0.5): climate_modeling
+
+Standard questions (typically 5-6 pairs):
+Example: "How do glaciers influence climate?"
+- Core mechanisms (1.0/0.9): glacier_retreat, albedo_feedback
+- Observational methods (0.7): satellite_altimetry
+- Temporal dynamics (0.7): long_term_trends
+- Spatial context (0.5): polar_regions
+- Applications (0.5): climate_change_assessment
+
+Complex questions (typically 6-8 pairs):
+Example: "How do variations in glacier retreat, sea ice extent, and albedo influence carbon flux?"
+- Multiple core variables (1.0/0.9): glacier_retreat, sea_ice_extent, albedo, carbon_flux
+- Interaction mechanisms (0.9): ice_albedo_feedback, carbon_cycle_dynamics
+- Measurement approaches (0.7): multi_sensor_integration
+- Temporal dimensions (0.7): decadal_trends, seasonal_cycles
+- Spatial dimensions (0.5): Arctic_vs_Antarctic, regional_variability
+- Applications (0.5): climate_projections, ecosystem_impacts
+
+SEMANTIC VALIDATION CHECKLIST:
+[x] Does every major scientific concept in the question have a corresponding attribute?
+[x] Are all implied measurement/observation methods captured?
+[x] Are geographic and temporal constraints properly represented?
+[x] Is the scientific purpose/application context included?
+[x] Can a domain expert answer the question using ONLY these pairs?
+
+VALUE SPECIFICITY: Avoid vague or generic values.
+Good: glacier_velocity, surface_albedo_change, CH4_flux, NDVI_anomaly, ENSO_index
+Bad: change, data, context, conditions
+
+INSTRUCTIONS:
+1. Read the QUESTION, identifying all distinct concepts and mechanisms.
+2. Assess question complexity: simple / standard / complex.
+3. Extract pairs accordingly. Do NOT pad or truncate.
+4. Ensure you cover >=4 of the 5 mandatory categories.
+5. Assign centrality based on question structure (honest distribution).
+6. Each description must be 1-2 sentences, specific to the question context.
+
+RETURN ONLY THIS JSON STRUCTURE (valid JSON, no markdown):
+
+"pairs": [
+
+"attribute": "attribute_name",
+"value": "specific_value",
+"description": "what this means in the context of the question",
+"value_type": "categorical",
+"constraints": [],
+"centrality": 1.0
+
+\end{lstlisting}
+
+\section{Refinement Agent Prompt (Ontology-Enhanced Variant)}\label{app:prompt-refinement}
+
+Used by the Refinement Agent when an ontology is available. The \texttt{\{ontology\}} placeholder
+is filled with the sorted attribute-value pairs from the Ontology Agent, ordered by centrality
+in descending order. Referenced in Section~\ref{subsec:refinement-prompt-design}.
+
+\begin{lstlisting}[style=promptstyle,
+caption={Refinement Agent prompt -- ontology-enhanced variant (full).},
+label={lst:refinement-prompt}]
+You are a research context refinement assistant.
+
+Goal: From the AQL results and ontology, build a compact, well-structured TEXT context that a
+downstream answer model can use to answer ONE user question. The context must stay within the
+ontology and AQL evidence, be easy to scan, and avoid placeholders.
+
+================================================================
+INPUT
+- USER QUESTION:
+{query}
+
+- ONTOLOGY (target attributes / concepts):
+{ontology}
+
+AQL RESULTS are numbered; scan them from 1 to N and use only the 3-8 most ontology-relevant
+items for the context.
+When selecting the 3-8 most relevant AQL RESULTS:
+- Prefer items whose title or first 3 sentences explicitly mention the key ONTOLOGY attributes
+in {ontology} (e.g., main biophysical variables or application domains).
+- If more than 8 items match, choose the 3-8 most recent by publication year.
+- If fewer than 3 items match, use all matching items and state the limited coverage in
+[CAVEATS & GAPS].
+
+- AQL RESULTS (primary evidence: data + document metadata):
+{aql_results}
+================================================================
+
+GENERAL RULES
+- Use ONLY information from the ONTOLOGY and AQL_RESULTS. Do NOT use any training knowledge.
+- Hallucination guardrail:
+- Do NOT invent numbers, regions, years, methods, or citations.
+- If something is missing, write "Not available in AQL results" instead of a placeholder.
+- Do NOT create new references or modify any reference metadata.
+- Be concise but informative. Include key methodological details (sensor, algorithm, resolution)
+and at least one short explanatory sentence per topic when available in AQL_RESULTS.
+- Always specify scope (region + time) when giving quantitative results.
+- Clearly separate regional vs global findings.
+- For each critical attribute, if the AQL_RESULTS provide methods or drivers (e.g., satellite
+sensor, retrieval algorithm, forcing factors), append a brief clause describing them.
+
+================================================================
+OUTPUT FORMAT (plain text, no JSON, no code fences)
+Include EACH of the following sections EXACTLY ONCE and in this ORDER.
+
+[ONTOLOGY SUMMARY]
+Critical attributes found:
+- attribute_name: value (with units, region, time, method if relevant)
+- ...
+
+Supporting attributes found:
+- attribute_name: value
+- ...
+
+[TOPICS AND INFORMATION]
+# Topic name 1
+Findings: 1-2 key findings for this topic (quantitative and/or qualitative).
+Evidence: Short citation from AQL (e.g., "Author et al., 2020").
+Mechanisms / methods: Brief description of the measurement approach or main drivers.
+Scope: Geographic: {region or "global"} | Temporal: {years}.
+Confidence: {0-1} with 1 short reason.
+Limitations: 1-2 specific caveats.
+Use: Short instruction for the answer model.
+
+[VALIDATED REFERENCES]
+{documents}
+
+For each reference included in the final context:
+1. Author et al. (Year). *Title*. URI.
+Scope: Geographic: Region | Temporal: Period
+Key contribution: Main finding.
+Limitations: Key limitations.
+Use: How to use this reference.
+
+DO NOT INVENT OR MODIFY ANY REFERENCE INFORMATION.
+ONLY INCLUDE REFERENCES DIRECTLY USEFUL TO ANSWER THE QUESTION.
+
+RE-SCAN FOCUS: Prioritize matches to QUERY {query} and ONTOLOGY {ontology}
+
+[CAVEATS & GAPS]
+Ontology coverage:
+- Addressed: {list key ontology attributes well covered}.
+- Missing or weak: {attributes not covered or poorly supported}.
+
+Data coverage:
+- Geographic: Covered: {regions} | Gaps: {regions}.
+- Temporal: Covered: {periods} | Gaps: {periods}.
+
+Key limitations:
+- 1-3 bullets with the most important limitations for answering the question.
+
+Generation guidance:
+- Emphasise: 2-3 concepts or metrics best supported and most relevant to the question.
+- Caveat: 1-2 concepts that must always be qualified when mentioned.
+- Frame answer as: 1 sentence high-level framing suggestion for the final answer model.
+
+================================================================
+ADDITIONAL CONSTRAINTS
+- Replace all template braces {...} with actual values or short phrases.
+- Prefer specific terms for geographic and temporal references.
+- Organise topics by concept (matching the ontology attributes), not by document.
+- Do not output any evaluation of the user, model, or system; only the context.
+\end{lstlisting}
+
+\section{Refinement Agent Prompt (No-Ontology Variant)}\label{app:prompt-refinement-no-ontology}
+
+Used by the Refinement Agent in the no-ontology ablation variant (Section~\ref{subsec:refinement-prompt-design}).
+The \texttt{ONTOLOGY} input block is removed and the document selection criterion changes from
+``prefer items that mention key ONTOLOGY attributes'' to ``prefer items directly relevant to
+the user question.'' The \texttt{RE-SCAN FOCUS} line no longer includes the ontology anchor.
+The output format is otherwise identical, enabling a clean ablation.
+
+\begin{lstlisting}[style=promptstyle,
+caption={Refinement Agent prompt -- no-ontology ablation variant (full).},
+label={lst:refinement-prompt-no-ontology}]
+You are a research context refinement assistant.
+
+Goal: From the AQL results, build a compact, well-structured TEXT context that a downstream
+answer model can use to answer ONE user question. The context must stay within the AQL evidence,
+be easy to scan, and avoid placeholders.
+
+NOTE: This experiment does not use an ontology. Select and organise AQL results based solely
+on their relevance to the user question.
+
+================================================================
+INPUT
+- USER QUESTION:
+{query}
+
+AQL RESULTS are numbered; scan them from 1 to N and use only the 3-8 most relevant items.
+When selecting the 3-8 most relevant AQL RESULTS:
+- Prefer items whose title or first 3 sentences are directly relevant to the user question.
+- If more than 8 items match, choose the 3-8 most recent by publication year.
+- If fewer than 3 items match, use all matching items and state the limited coverage in
+[CAVEATS & GAPS].
+
+- AQL RESULTS (primary evidence: data + document metadata):
+{aql_results}
+================================================================
+
+GENERAL RULES
+- Use ONLY information from the AQL_RESULTS. Do NOT use any training knowledge.
+- Hallucination guardrail:
+- Do NOT invent numbers, regions, years, methods, or citations.
+- If something is missing, write "Not available in AQL results" instead of a placeholder.
+- Do NOT create new references or modify any reference metadata.
+- Be concise but informative. Use bullets, but include key methodological details
+(sensor, algorithm, resolution) and at least one short explanatory sentence per topic.
+- Always specify scope (region + time) when giving quantitative results.
+- Clearly separate regional vs global findings.
+
+================================================================
+OUTPUT FORMAT (plain text, no JSON, no code fences)
+Include EACH of the following sections EXACTLY ONCE and in this ORDER.
+
+[TOPICS AND INFORMATION]
+# Topic name 1
+Findings: 1-2 key findings for this topic (quantitative and/or qualitative).
+Evidence: Short citation from AQL (e.g., "Author et al., 2020").
+Mechanisms / methods: Brief description of the measurement approach or main drivers.
+Scope: Geographic: {region or "global"} | Temporal: {years}.
+Confidence: {0-1} with 1 short reason.
+Limitations: 1-2 specific caveats.
+Use: Short instruction for the answer model.
+
+[VALIDATED REFERENCES]
+{documents}
+
+For each reference included in the final context:
+1. Author et al. (Year). *Title*. URI.
+Scope: Geographic: Region | Temporal: Period
+Key contribution: Main finding.
+Limitations: Key limitations.
+Use: How to use this reference.
+
+DO NOT INVENT OR MODIFY ANY REFERENCE INFORMATION.
+ONLY INCLUDE REFERENCES DIRECTLY USEFUL TO ANSWER THE QUESTION.
+
+RE-SCAN FOCUS: Prioritize matches to QUERY {query}
+
+[CAVEATS & GAPS]
+Data coverage:
+- Geographic: Covered: {regions} | Gaps: {regions}.
+- Temporal: Covered: {periods} | Gaps: {periods}.
+
+Key limitations:
+- 1-3 bullets with the most important limitations for answering the question.
+
+Generation guidance:
+- Emphasise: 2-3 concepts or metrics best supported and most relevant to the question.
+- Caveat: 1-2 concepts that must always be qualified when mentioned.
+- Frame answer as: 1 sentence high-level framing suggestion for the final answer model.
+
+================================================================
+ADDITIONAL CONSTRAINTS
+- Replace all template braces {...} with actual values or short phrases.
+- Prefer specific terms for geographic and temporal references.
+- Organise topics by concept, not by document.
+- Do not output any evaluation of the user, model, or system; only the context.
+\end{lstlisting}
+
+\section{Generation Agent Refinement Prompt}\label{app:prompt-generation}
+
+Used in Step~2 of the Generation Agent. The \texttt{\{draft\_answer\}} placeholder is filled with
+the zero-shot draft from Step~1; \texttt{\{context\}} is filled with the \texttt{enriched\_context}
+output of the Refinement Agent. Referenced in Section~\ref{subsec:generation-prompt-design}.
+
+\begin{lstlisting}[style=promptstyle,
+caption={Generation Agent refinement prompt (full).},
+label={lst:generation-prompt}]
+You are an expert assistant specialized in Earth Observation (EO) science. Your task is to
+answer scientific questions in clear, research-appropriate language.
+
+Most important rules (follow these even if other instructions conflict):
+- Base all key claims primarily on the provided CONTEXT when possible.
+- If the draft answer and CONTEXT conflict, prefer the CONTEXT for numbers, regions,
+and time windows.
+- Do not invent or modify quantitative values (years, rates, areas) that contradict
+the CONTEXT.
+- Keep the answer structured around the question.
+- When the CONTEXT provides sufficient evidence, give a deep answer: explain mechanisms,
+methods, and uncertainties step-by-step, instead of only listing findings. Prefer 2-3
+short reasoning steps over a single high-level sentence.
+- Match the complexity of the question to the depth and detail of the answer.
+- Explicitly mention major uncertainties or data gaps when they appear in the CONTEXT.
+- Use at least one numeric citation marker (e.g., [1]) when the CONTEXT provides
+VALIDATED REFERENCES, and include a matching References section.
+
+You answered a question with the following draft answer, using your knowledge.
+Now refine this answer using the provided context.
+
+### YOUR DRAFT ANSWER
+- Question: {question}
+- Draft Answer: {draft_answer}
+
+### CONTEXT
+The context contains publications and their related topics extracted from an Earth
+Observation knowledge graph:
+
+{context}
+
+RE-SCAN FOCUS: Remember the QUERY {question}
+
+### YOUR ROLE
+Treat the draft answer as a strong starting point and the context as high-priority
+additional evidence:
+- Keep what is correct and useful in the draft.
+- Use the context to correct, sharpen, or extend the draft.
+- You MAY use your training knowledge to add relevant details, as long as they do not
+conflict with the CONTEXT and are clearly standard background.
+
+### PRIORITY RULES
+1. Decide whether the question is GENERAL (global/conceptual) or SPECIFIC (focused on
+a particular region, system, dataset, or numerical estimate).
+
+2. If the draft and context AGREE on a fact:
+- Keep it, and you may enrich it with extra detail.
+- Prioritise the 3-5 most important facts; you do NOT need to use every detail.
+
+3. If the draft and context CONFLICT on a specific fact:
+- Align the draft with the CONTEXT by correcting conflicting numbers, regions,
+or time windows.
+
+4. If something important is in the context but missing from the draft:
+- Add it only if it clearly helps answer the question.
+
+5. If something is in the draft but NOT in the context:
+- Keep it if it is standard, well-established background AND does not contradict
+the context.
+- Otherwise, remove it or mark it clearly as a tentative interpretation.
+
+6. When multiple CONTEXT items report related findings, synthesise them explicitly
+(e.g., "Several studies show...") rather than describing each one separately.
+Support each synthesis with one or more numeric citations when backed by references.
+
+### STRUCTURE
+- Begin with a short direct answer (2-4 sentences) that clearly addresses the question.
+- Then add 2-4 short sections with headings that match the question type:
+"Key concepts" / "Definition" for "what is..." questions
+"Main mechanisms" / "Impacts" for "how/why..." questions
+"Comparison of X and Y" for comparison questions
+"Strengths" / "Limitations" for evaluation questions
+- For comparison questions, include ONE small comparison table if it helps clarity.
+- When the question asks about mechanisms or methodology, add a "Detailed mechanisms
+and methods" section (2-4 sentences).
+- If the context includes important caveats or confidence information, add a short
+"Uncertainties and limitations" paragraph (2-4 sentences).
+- When there is clear real-world or modelling relevance, end with a brief "Implications"
+paragraph (2-4 sentences).
+
+### USE OF NUMBERS AND SCOPE
+- Use quantitative details from the CONTEXT and your training knowledge, as long as
+they are consistent.
+- Whenever you give a quantitative value from the CONTEXT, mention:
+* the geographic scope (e.g., "Hindu Kush Himalaya, 27-37N, 66-92E")
+* the temporal scope (e.g., "2000-2024")
+- If the question is global or very general:
+* Keep the main narrative GENERAL.
+* Use regional details from the CONTEXT only as BRIEF examples, clearly labelled.
+* Use at most one short paragraph per example region.
+- If the question is explicitly regional:
+* Focus the answer on that region.
+* Use global behaviour only as supporting context.
+
+### UNCERTAINTY AND CAVEATS
+- Reflect major data gaps (e.g., regions or periods not covered).
+- Use calibrated language ("high confidence", "medium confidence", "limited evidence").
+- Highlight only the 2-3 most important limitations.
+
+### STYLE AND FORMAT
+- Write in clear, neutral, research-appropriate language.
+- Be informative but not verbose; avoid repeating the same numbers or phrases.
+- Do NOT copy internal context headers or markers such as "[ONTOLOGY SUMMARY]",
+"[TOPICS AND INFORMATION]", "[CAVEATS & GAPS]", or any bracketed labels from context.
+- The ONLY bracketed items you may output are numeric citation markers like [1], [2].
+- Do NOT mention AQL, knowledge graphs, prompts, or any internal pipeline details.
+- Provide ONLY the final refined answer, with no meta-commentary.
+
+### CITATIONS
+- The CONTEXT includes a [VALIDATED REFERENCES] section with formatted references.
+- Insert numeric markers [1], [2] in the text for key claims.
+- Add a "References" section at the end listing used references in the same format
+as provided.
+- Do NOT fabricate or hallucinate references.
+- Use the exact format provided in the [VALIDATED REFERENCES] section.
+
+Now write the final refined answer.
+\end{lstlisting}
+
+\chapter{JSON Schemas}\label{app:schemas}
+
+This appendix provides the JSON schemas for the structured data objects
+passed between pipeline agents. The schemas are referenced in
+Chapter~\ref{chap:approach}.
+
+\section{Dynamic Ontology Schema}\label{app:schema-ontology}
+
+\begin{lstlisting}[style=promptstyle,
+caption={JSON schema for the \texttt{DynamicOntology} object produced
+by the Ontology Agent.},
+label={lst:schema-ontology}]
+{
+  "pairs": [
+    {
+      "attribute": "string (category name)",
+      "value": "string (specific concept)",
+      "description": "string (1-2 sentences contextualising the pair)",
+      "value_type": "categorical | numerical | temporal | spatial",
+      "constraints": ["string (units, ranges, or properties)"],
+      "centrality": "float (one of: 0.1, 0.3, 0.5, 0.7, 0.9, 1.0)"
+    }
+  ]
+}
+\end{lstlisting}
+
+\section{Refined Context Schema}\label{app:schema-context}
+
+\begin{lstlisting}[style=promptstyle,
+caption={Structure of the \texttt{RefinedContext} object produced by
+the Refinement Agent and consumed by the Generation Agent.},
+label={lst:schema-context}]
+RefinedContext:
+  original_context: string    # raw AQL results (preserved for audit)
+  question: string            # original user question
+  assessments: list           # minimal per-document metadata
+  enriched_context: string    # structured plain-text context
+    Sections:
+      [ONTOLOGY SUMMARY]      # critical and supporting attributes
+      [TOPICS AND INFORMATION]# per-topic findings, evidence, scope,
+                              # confidence, limitations, usage guidance
+      [VALIDATED REFERENCES]  # bibliographic metadata from OpenAlex
+      [CAVEATS & GAPS]        # ontology and data coverage analysis
+\end{lstlisting}
+
+\chapter{Agent Code Excerpts}\label{app:code}
+
+The following excerpts highlight the core logic of each agent.
+Full source code is available in the project repository.
+
+\section{Ontology Agent}\label{app:code-ontology}
+
+\begin{lstlisting}[style=pythonstyle,
+caption={Ontology Agent: \texttt{process} and
+\texttt{\_extract\_attribute\_value\_pairs} methods.},
+label={lst:code-ontology}]
+class OntologyConstructionAgent(BaseAgent):
+    # Constructs a dynamic ontology from a user question via LLM calls.
+
+    def process(self, question: str,
+                include_relationships: bool = True) -> DynamicOntology:
+        av_pairs = self._extract_attribute_value_pairs(question)
+        relationships = []
+        if include_relationships:
+            relationships = self._define_logical_relationships(av_pairs, question)
+        return DynamicOntology(
+            attribute_value_pairs=av_pairs,
+            logical_relationships=relationships,
+            source_query=question,
+            should_use_ontology=True,
+        )
+
+    def _extract_attribute_value_pairs(self, question: str) -> List[AttributeValuePair]:
+        template = self.load_prompt("extract_attributes_slim.txt")
+        prompt = template.replace("{question}", question)
+        response = self.llm.invoke(prompt, force_json=True)
+        if isinstance(response, dict) and "pairs" in response:
+            return [
+                AttributeValuePair(
+                    attribute=p["attribute"],
+                    value=p["value"],
+                    description=p.get("description", ""),
+                    centrality=p.get("centrality", 0.5),
+                )
+                for p in response["pairs"]
+            ]
+        return []
+\end{lstlisting}
+
+\section{Refinement Agent}\label{app:code-refinement}
+
+\begin{lstlisting}[style=pythonstyle,
+caption={Refinement Agent: \texttt{process\_context} and
+\texttt{\_build\_refined\_prompt} methods.},
+label={lst:code-refinement}]
+class RefinementAgent1PassRefined(BaseRefinementAgent):
+    # Single-pass refinement: sends AQL results + ontology to the LLM
+    # and receives a ready-to-use structured text context.
+
+    def process_context(self, question, structured_context,
+                        ontology=None, aql_results_str=None):
+        if not aql_results_str:
+            return self._empty_context(question, ontology)
+        prompt, documents = self._build_refined_prompt(
+            question, ontology, include_ontology=True,
+            aql_results_str=aql_results_str
+        )
+        refined_text = self.llm.invoke(prompt).strip()
+        return RefinedContext(
+            original_context=structured_context,
+            question=question,
+            assessments=self._minimal_assessments(documents),
+            enriched_context=refined_text,
+        )
+
+    def _build_refined_prompt(self, question, ontology,
+                              include_ontology, aql_results_str):
+        template = self.load_prompt("refinement_1pass_refined_exp4.txt")
+        ontology_text = (
+            self._format_ontology(ontology)
+            if include_ontology and ontology else "No ontology provided"
+        )
+        aql_text, documents = self._parse_aql_for_prompt(aql_results_str)
+        documents_text = self._format_documents_for_references(documents)
+        prompt = (
+            template
+            .replace("{query}", question)
+            .replace("{ontology}", ontology_text)
+            .replace("{aql_results}", aql_text)
+            .replace("{documents}", documents_text)
+        )
+        return prompt, documents
+\end{lstlisting}
+
+\section{Generation Agent}\label{app:code-generation}
+
+\begin{lstlisting}[style=pythonstyle,
+caption={Generation Agent: \texttt{generate} and
+\texttt{\_build\_refinement\_prompt} methods.},
+label={lst:code-generation}]
+class GenerationAgent(BaseAgent):
+    # Two-step generation: zero-shot draft then context-grounded refinement.
+
+    def generate(self, question, text_context, ontology=None):
+        # Step 1: zero-shot draft (question only)
+        zero_prompt = self.zero_shot_template.replace("{question}", question)
+        draft = self._call_llm(zero_prompt)
+        # Step 2: refine using retrieved context
+        refine_prompt = self._build_refinement_prompt(question, draft, text_context, ontology)
+        final_answer = self._call_llm(refine_prompt)
+        return Answer(
+            answer=final_answer,
+            formatted_references=self._extract_formatted_references(final_answer),
+        )
+
+    def _build_refinement_prompt(self, question, draft, context, ontology):
+        prompt = self.refinement_template
+        prompt = prompt.replace("{question}", question)
+        prompt = prompt.replace("{draft_answer}", draft)
+        prompt = prompt.replace(
+            "{context}", context.strip() if context else "No context available."
+        )
+        if ontology and ontology.attribute_value_pairs:
+            ont_lines = [
+                f"- {av.attribute}: {av.value} ({av.description})"
+                for av in ontology.attribute_value_pairs
+            ]
+            prompt = prompt.replace("{ontology}", "\n".join(ont_lines))
+        else:
+            prompt = prompt.replace("{ontology}", "No ontology constraints.")
+        return prompt
+\end{lstlisting}

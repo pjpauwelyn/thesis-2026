@@ -1,0 +1,123 @@
+\chapter{Evaluation Methodology}
+\label{chap:evaluation}
+
+\section{Introduction}
+\label{sec:eval-intro}
+
+This chapter describes how we evaluate the four pipeline variants introduced in Chapter~\ref{chap:approach}. We use a dataset of 70~Earth observation (EO) questions and a large language model (LLM)-as-a-judge framework with eight criteria scored on a 1--10 scale. We test for significant differences using non-parametric methods. The chapter first describes the evaluation dataset (\S\ref{sec:dataset}) and the pipeline variants under comparison (\S\ref{sec:pipeline-variants}). We then describe two framework versions: an initial version using GPT-4.1-mini that showed important limitations (\S\ref{sec:initial-framework}), and the final version using Claude Sonnet~4.6 that fixes those limitations (\S\ref{sec:final-framework}). We end with the significance testing method (\S\ref{sec:significance-testing}).
+
+%% ============================================================
+\section{Evaluation Dataset}
+\label{sec:dataset}
+%% ============================================================
+
+\subsection{Question Generation}
+\label{subsec:question-generation}
+
+We generated 70~questions using GPT-4.1-mini in a zero-shot manner, combining two axes: a \emph{topic} drawn from the NASA GCMD taxonomy~\citep{nasagcmd2023} and a \emph{question intent} that determines the type of reasoning the question requires. All 14~topics present in the knowledge graph were covered, including atmosphere, cryosphere, and land surface.
+
+Five question intents guide diversity:
+
+\begin{description}
+\item[Exploratory:] Discovering new concepts, with no specific expectations. \\ \emph{``How do variations in cryospheric indicators, such as glacier retreat and sea ice extent, influence carbon flux dynamics and land surface heat absorption patterns?''}
+\item[Comparative:] Comparing two scientific concepts or methods. \\ \emph{``How do genetic analysis methods compare to traditional physical characteristic-based approaches in classifying vertebrates, invertebrates, and fungi?''}
+\item[Descriptive:] Explaining or describing a concept. \\ \emph{``What is the role of climate change adaptation in mitigating risks to human settlements?''}
+\item[Causal:] Identifying cause and effect between phenomena. \\ \emph{``How do variations in atmospheric gas concentrations preserved in ice core records influence global temperature changes during glacial and interglacial periods?''}
+\item[Relational:] Characterising the relationship between two concepts. \\ \emph{``What is the relationship between cloud cover variability and changes in atmospheric temperature at different altitudes?''}
+\end{description}
+
+The combination of 14~topics and 5~intents covers factual recall, method comparison, multi-mechanism causal reasoning, and cross-domain synthesis. These questions are where ontology-guided refinement is expected to matter most: each requires the system to match evidence across several semantic dimensions simultaneously.
+
+%% ============================================================
+\section{Pipeline Variants}
+\label{sec:pipeline-variants}
+%% ============================================================
+
+We compare four pipeline configurations. All use Mistral Small 24B as the generation model.
+
+\begin{description}
+\item[Zero-shot baseline.] The question is submitted to Mistral Small without any retrieved context. It serves as a lower bound and makes retrieval degradation visible when it occurs.
+
+\item[Two-step baseline.] The pipeline described by~\citet{elbaff2025earthobservationrag}: a zero-shot draft refined using raw context from the EO knowledge graph. It uses no ontology, no intermediate document assessment, and the original DLR generation prompt.
+
+\item[No-ontology RAG.] This variant uses the same improved Refinement and Generation Agent prompts as the ontology-enhanced pipeline, but the Refinement Agent receives no ontology. It evaluates documents based on the question text alone. This ablation isolates the ontology's contribution from prompt engineering improvements.
+
+\item[Ontology-enhanced pipeline.] The full system described in Chapter~\ref{chap:approach}: ontology construction, ontology-guided refinement, and enhanced generation. This is the primary contribution variant.
+\end{description}
+
+%% ============================================================
+\section{LLM-as-a-Judge Framework}
+\label{sec:llm-as-judge}
+%% ============================================================
+
+\subsection{Motivation}
+\label{subsec:motivation}
+
+According to~\citet{zheng2023judging}, strong LLM judges achieve over 80\% agreement with human annotators, matching the level of agreement humans reach among themselves. They also identified the main failure modes of LLM-as-a-judge: position bias (preferring answers presented first in pairwise comparisons), verbosity bias (preferring longer answers), and self-enhancement bias (preferring outputs from the same model family as the judge). Our framework design addresses each of these directly.
+
+\subsection{Initial Framework}
+\label{sec:initial-framework}
+
+Our initial evaluation used GPT-4.1-mini as the judge with five criteria on a 1--5 scale, following the setup of the DLR baseline~\citep{elbaff2025earthobservationrag}. Two problems emerged. First, score saturation: most answers clustered at 5, leaving too little room to distinguish between pipeline variants. Second, the five criteria borrowed from the baseline (Factuality, Relevance, Groundedness, Helpfulness, and Depth) do not directly measure the qualities this thesis aims to improve: directness, scope awareness, quantitative precision, and structured response organisation.
+
+\subsection{Final Framework}
+\label{sec:final-framework}
+
+The final framework replaces GPT-4.1-mini with Claude Sonnet~4.6 and expands to eight criteria on a 1--10 scale, avoiding the ceiling effects that limited the initial framework. We switched to Claude Sonnet~4.6 to remove self-enhancement bias. The generation model is from the Mistral family, which is not an Anthropic model, so a Claude-based judge cannot favour its own outputs.
+
+\subsubsection{Evaluation Criteria}
+\label{subsubsec:criteria}
+
+The eight criteria divide into two groups:
+
+\paragraph{Thesis-specific criteria (four).}
+\begin{description}
+\item[Directness (1--10):] Does the answer open with a clear, concise response to the core question before elaborating?
+\item[Quantitative Precision (1--10):] Are numerical values, units, and their geographic/temporal scope accurately stated?
+\item[Response Structure (1--10):] Is the answer organised with appropriate headers, sections, or tables matched to the question type?
+\item[Scope Awareness (1--10):] Does the answer correctly scope its claims geographically and temporally, avoiding unqualified generalisations?
+\end{description}
+
+\paragraph{General quality criteria (four).}
+\begin{description}
+\item[Scientific Accuracy (1--10):] Are the scientific claims factually correct?
+\item[Relevance (1--10):] Does the answer address what the question actually asks?
+\item[Completeness (1--10):] Does the answer cover the main dimensions of the question?
+\item[Helpfulness (1--10):] Is the answer practically useful to someone researching the topic?
+\end{description}
+
+The four thesis-specific criteria (Directness, Quantitative Precision, Response Structure, and Scope Awareness) were not part of the initial GPT-4.1-mini framework (Appendix~\ref{app:initial-criteria}). Full score-band descriptions for all eight criteria are given in Appendix~\ref{app:eval-criteria}.
+
+The average inter-criterion Pearson correlation across all 280~evaluations is $r = 0.65$. This means that a better answer tends to score higher on multiple dimensions at the same time. An answer that misaligns context (low Scope Awareness) is also likely to be less helpful and less scientifically accurate. The moderate correlation does not undermine the criteria's usefulness: the goal is to identify \emph{where} a pipeline improves, not to treat each dimension as independent.
+
+\subsection{Evaluation Protocol}
+\label{subsec:eval-protocol}
+
+For each question-answer pair, the judge receives the system prompt with criteria definitions and score range descriptions, followed by the question and the answer. It returns eight integer scores. Each pair is evaluated on its own; the judge never sees answers from other pipeline variants for comparison. This single-answer grading approach avoids position bias~\citep{zheng2023judging}. The Directness criterion explicitly penalises unnecessary verbosity.
+
+We compute per-pipeline means for each criterion and for the overall score. Per-question score distributions are used for significance testing and per-question analysis.
+
+\subsection{Bias Mitigations}
+\label{subsec:bias-mitigations}
+
+No automated evaluation framework removes all biases. The LLM-as-a-judge approach carries the judge model's own biases, and Claude Sonnet~4.6 may not score responses the same way a human EO domain expert would. We address this remaining limitation through complementary qualitative error analysis in Chapter~\ref{chap:results}, where we manually inspect the outputs to the four questions from the problem analysis (Section~\ref{sec:failure-patterns}) to verify that score differences correspond to observable quality differences.
+
+%% ============================================================
+\section{Significance Testing}
+\label{sec:significance-testing}
+%% ============================================================
+
+\subsection{Choice of Test}
+\label{subsec:test-choice}
+
+We use the Wilcoxon signed-rank test~\citep{wilcoxon1945individual} for all pairwise comparisons between pipeline variants. Three properties of our data make it the right choice. Scores are ordinal integers on a 1--10 scale, and the Wilcoxon test requires no normality assumption. The 70~questions are evaluated under all four pipeline variants, so the scores are paired: each question serves as its own control, removing question-level variance from the comparison. The Wilcoxon test is also more powerful than the sign test while remaining distribution-free, relevant given the sample of 70~questions.
+
+\subsection{Correction for Multiple Comparisons}
+\label{subsec:multiple-comparisons}
+
+We perform six pairwise comparisons (the number of pairs from four pipeline variants) for each of the eight criteria. We apply Bonferroni correction within each criterion: $\alpha = 0.05$ divided across six pairwise comparisons gives $\alpha_{\text{corrected}} = 0.0083$ per test. Across all eight criteria, this amounts to 48 individual tests in total. When a corrected $p$-value falls below this threshold, we report the difference as statistically significant.
+
+\subsection{Effect Size}
+\label{subsec:effect-size}
+
+A significant result does not automatically mean the difference matters in practice, especially with 70~paired observations where the test has enough power to flag even small differences as significant. We therefore report an effect size estimate for each significant finding using the rank-biserial correlation $r$, calculated from the Wilcoxon test statistic~\citep{kerby2014simple}. We interpret $r \geq 0.1$ as small, $r \geq 0.3$ as medium, and $r \geq 0.5$ as large. We report results as significant only when both the corrected $p$-value and the effect size meet their respective thresholds.

@@ -1,0 +1,188 @@
+\chapter{Results and Analysis}
+\label{chap:results}
+
+% =============================================================================
+\section{Chapter Overview}
+\label{sec:results-overview}
+% =============================================================================
+
+Chapter~\ref{chap:evaluation} described the evaluation setup: four pipeline variants, 70~Earth observation questions, and Claude Sonnet~4.6 as an LLM-as-a-judge scoring eight criteria on a 1--10 scale. The judge evaluated each question-answer pair independently, without knowing which pipeline produced the answer. This gives 280~evaluations (70~questions $\times$ 4~pipelines) and 2{,}240 individual criterion scores. An earlier round using GPT-4.1-mini as judge is reported in Section~\ref{sec:initial-framework}; the Claude-based evaluation is the primary evidence base.
+
+% =============================================================================
+\section{Overall Pipeline Performance}
+\label{sec:overall-performance}
+% =============================================================================
+
+\begin{table}[htbp]
+\centering
+\caption{Overall pipeline ranking on the 70-question EO benchmark, evaluated
+by Claude Sonnet~4.6 (mean of eight criteria, 1--10 scale).}
+\label{tab:overall-ranking}
+\begin{tabular}{clcl}
+\toprule
+\textbf{Rank} & \textbf{Pipeline} & \textbf{Overall Score} & \textbf{Note} \\
+\midrule
+1 & Ontology-Enhanced RAG & 7.48 / 10 & Best \\
+2 & No-Ontology RAG & 6.88 / 10 & Second \\
+3 & Zero-Shot & 6.28 / 10 & Third overall \\
+4 & Two-Step RAG Baseline & 5.51 / 10 & Lowest overall \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{chart_4pipe_heatmap.jpg}
+\caption{Heatmap of mean criterion scores across all four pipelines. The ontology-enhanced pipeline shows the deepest green shading across all criteria. Quantitative precision forms a visually distinct cool band for every pipeline.}
+\label{fig:heatmap-overview}
+\end{figure}
+
+Table~\ref{tab:overall-ranking} shows the full ranking. The gaps between consecutive pipelines are roughly even: +0.60 from no-ontology to ontology, +0.60 from zero-shot to no-ontology, and +0.77 from the two-step baseline to zero-shot.
+
+A notable result is that the two-step baseline (5.51) scores below the zero-shot baseline (6.28). The original context and generation agent properties in the original pipeline actually degrade the final answers. This is not driven by a few outliers: the two-step baseline underperforms zero-shot on 66 of 70~questions. Per criterion, directness drops by 2.09 points, response structure by 1.40, relevance by 0.96, and scope awareness by 0.80. The only criterion where the two-step baseline slightly beats zero-shot is quantitative precision (+0.06), which is negligible. These drops map directly onto the four shortcomings from Chapter~\ref{chap:preliminaries}: delayed direct answers, poor structure, relevance drift from context padding, and uncaveated claims.
+
+It is also worth comparing the zero-shot and no-ontology pipelines. Their overall scores are close (6.28 vs 6.88), and on several criteria the differences are small: relevance (7.57 vs 7.56), completeness (6.91 vs 6.86), and scientific accuracy (7.00 vs 7.19). The improved refinement and generation prompts alone, without the ontology, bring performance back to roughly the zero-shot level on core quality metrics. The bigger differences appear on scope awareness (5.34 vs 7.07) and helpfulness (5.41 vs 6.56), where the restructured pipeline already helps. The ontology-enhanced variant pulls clearly ahead on all eight criteria, so ontology-guided semantic reasoning adds a consistent edge that prompt improvements alone do not reach.
+
+The heatmap in Figure~\ref{fig:heatmap-overview} shows the same pattern visually. The gap between the ontology-enhanced and no-ontology variants is smaller than the gap between the two-step baseline and zero-shot. The three-agent architecture with structured refinement accounts for the larger share of the improvement; the ontology adds a further consistent increment on top.
+
+% =============================================================================
+\section{Per-Criterion Analysis}
+\label{sec:per-criterion}
+% =============================================================================
+
+\begin{table}[htbp]
+\centering
+\caption{Mean scores per criterion for each pipeline (1--10 scale).
+Bold values mark the highest score in each criterion column.}
+\label{tab:per-criterion-means}
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Pipeline} & \textbf{Sci.Acc} & \textbf{Relev} & \textbf{Compl}
+& \textbf{Direct} & \textbf{Quant} & \textbf{Struct}
+& \textbf{Scope} & \textbf{Help} \\
+\midrule
+Zero-Shot & 7.00 & 7.57 & 6.91 & 6.67 & 4.01 & 7.30 & 5.34 & 5.41 \\
+Two-Step Baseline & 6.66 & 6.61 & 6.57 & 4.59 & 4.07 & 5.90 & 4.54 & 5.13 \\
+No-Ontology & 7.19 & 7.56 & 6.86 & 7.11 & 5.33 & 7.33 & 7.07 & 6.56 \\
+Ontology-Enh. & \textbf{7.83} & \textbf{7.96} & \textbf{7.46}
+& \textbf{7.93} & \textbf{5.93} & \textbf{7.67}
+& \textbf{7.63} & \textbf{7.41} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:per-criterion-means} breaks down the scores by criterion. We group the eight criteria into three clusters based on what they measure.
+
+\paragraph{Thesis-critical criteria.} These four criteria correspond directly to the four shortcomings identified in Chapter~\ref{chap:preliminaries}. Directness shows the largest single-criterion gap in the entire evaluation: the ontology-enhanced pipeline scores 7.93 compared to 4.59 for the two-step baseline, a 3.34-point difference. The ontology gives the generation agent a clear priority order of concepts, so the answer opens with the core mechanism instead of burying it. Scope awareness follows a similar pattern: 7.63 vs 4.54 (a 3.09-point gap). The ontology's spatial and temporal qualifiers (e.g.\ \texttt{polar\_regions}, \texttt{2000--2023}) are passed to the generation agent, which uses them to scope its claims. Response structure improves by 1.77 points (7.67 vs 5.90). The structured refinement output (Topics \& Information, Validated References, Caveats \& Gaps) gives the generation agent pre-organised input that maps onto better-organised answers. Quantitative precision improves by 1.86 points (5.93 vs 4.07), but it remains the weakest criterion for all pipelines. We return to this in Section~\ref{sec:quant-precision}.
+
+\paragraph{Core quality criteria.} Scientific accuracy, relevance, and completeness represent general answer quality. The ontology-enhanced pipeline leads on all three: scientific accuracy at 7.83, relevance at 7.96 (the highest single score of any criterion for any pipeline), and completeness at 7.46. An interesting pattern is that zero-shot relevance (7.57) is nearly identical to no-ontology relevance (7.56). Retrieval on its own does not improve relevance; the ontology's semantic alignment is what pushes it to 7.96 (+0.40). On completeness, the ontology ensures that each semantic dimension (sensors, variables, scope) is addressed, raising the score from 6.86 to 7.46.
+
+\paragraph{Helpfulness.} The ontology-enhanced pipeline scores 7.41 on helpfulness, compared to 6.56 for no-ontology (+0.86, the largest ontology gain). Helpfulness correlates strongly with quantitative precision ($r = 0.80$), so the ontology's ability to surface specific numbers and datasets is what drives perceived usefulness. The two-step baseline (5.13) is only slightly below zero-shot (5.41) on helpfulness despite being worse overall. Users may still see some value in the extra context, even when it is poorly structured.
+
+% =============================================================================
+\section{Score Distributions and Win Rates}
+\label{sec:distributions}
+% =============================================================================
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{chart_per_question.jpg}
+\caption{Per-question overall scores for the baseline and ontology-enhanced pipelines across the
+70-question benchmark, sorted by question index. The ontology-enhanced
+pipeline (orange bars) exceeds the baseline pipeline (blue bars) over the full question distribution (with the exception of two questions).}
+\label{fig:per-question}
+\end{figure}
+
+The ontology-enhanced pipeline wins on 56 of 70~questions (80\%) against the no-ontology variant. The average winning margin is about 0.60 points, with individual margins from under 0.25 (near-ties) to over 1.50 (clear ontology dominance). The largest gains appear on multi-part comparison questions, where the ontology's structured dimensions help the generation agent organise parallel comparisons, and on questions that require explicit spatial or temporal scoping, where the scope qualifiers translate directly into caveats. The 14~questions where the no-ontology variant ties or wins tend to be simpler factual questions, where the ontology adds context overhead with little informational benefit.
+
+On the other end, the two-step baseline loses to zero-shot on 66 of 70~questions (94\%). As Figure~\ref{fig:per-question} shows, the two-step baseline line runs consistently below the zero-shot line, with only 4~questions where the two-step baseline marginally exceeds zero-shot (all by less than 0.5 points). The degradation from the two-step refinement is systematic, not driven by a few bad cases.
+
+% =============================================================================
+\section{Statistical Significance and Effect Sizes}
+\label{sec:statistical}
+% =============================================================================
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.75\textwidth]{effect_heatmap.jpg}
+\caption{Pairwise effect-size heatmap (Wilcoxon signed-rank $r$) for all
+six pipeline comparisons. All effect sizes exceed $r = 0.77$, indicating
+large practical differences. The largest effect ($r = 0.997$) is between
+the two-step baseline and the ontology-enhanced pipeline; the smallest
+($r = 0.778$) is between zero-shot and the no-ontology variant.}
+\label{fig:effect-heatmap}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\caption{Pairwise Wilcoxon signed-rank tests on per-question overall scores
+($n = 70$). All comparisons are significant at $p < 0.001$. Effect sizes
+($r$) are computed as $r = Z / \sqrt{N}$ following~\citet{zheng2023judging}.}
+\label{tab:pairwise-tests}
+\begin{tabular}{llcc}
+\toprule
+\textbf{Comparison} & \textbf{Direction} & $\boldsymbol{p}$ & \textbf{Effect size} $\boldsymbol{r}$ \\
+\midrule
+Two-Step vs Ontology & Ontology $\gg$ Two-Step & $< 0.001$ & 0.997 \\
+ZS vs Two-Step & ZS $>$ Two-Step & $< 0.001$ & 0.984 \\
+ZS vs Ontology & Ontology $\gg$ ZS & $< 0.001$ & 0.979 \\
+Two-Step vs No-Ontology & No-Ont $\gg$ Two-Step & $< 0.001$ & 0.957 \\
+No-Ont vs Ontology & Ontology $>$ No-Ont & $< 0.001$ & 0.862 \\
+ZS vs No-Ontology & No-Ont $>$ ZS & $< 0.001$ & 0.778 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Per-criterion comparison between the ontology-enhanced and
+no-ontology pipelines. All eight criteria show statistically significant
+improvements; seven at $p < 0.001$ and one (response structure) at
+$p = 0.003$.}
+\label{tab:ont-vs-noont-criteria}
+\small
+\begin{tabular}{lcccl}
+\toprule
+\textbf{Criterion} & \textbf{No-Ont} & \textbf{Ontology} & \textbf{Diff}
+& $\boldsymbol{p}$ \\
+\midrule
+Helpfulness & 6.56 & 7.41 & +0.86 & $< 0.001$ \\
+Directness & 7.11 & 7.93 & +0.81 & $< 0.001$ \\
+Scientific Accuracy & 7.19 & 7.83 & +0.64 & $< 0.001$ \\
+Completeness & 6.86 & 7.46 & +0.60 & $< 0.001$ \\
+Quant.\ Precision & 5.33 & 5.93 & +0.60 & $< 0.001$ \\
+Scope Awareness & 7.07 & 7.63 & +0.56 & $< 0.001$ \\
+Relevance & 7.56 & 7.96 & +0.40 & $< 0.001$ \\
+Response Structure & 7.33 & 7.67 & +0.34 & $= 0.003$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All six pairwise comparisons between pipelines are significant at $p < 0.001$ using the Wilcoxon signed-rank test, with Bonferroni correction applied as described in Chapter~\ref{chap:evaluation}. All effect sizes exceed $r = 0.77$, well above the conventional large threshold of $r = 0.50$. The largest effect ($r = 0.997$) separates the two-step baseline from the ontology-enhanced pipeline, the two endpoints of the ranking. The smallest ($r = 0.778$) separates zero-shot from the no-ontology variant, the two middle-ranked pipelines. Figure~\ref{fig:effect-heatmap} and Table~\ref{tab:pairwise-tests} show these results.
+
+Table~\ref{tab:ont-vs-noont-criteria} focuses on the ontology vs no-ontology comparison per criterion. All eight criteria show significant ontology gains. Response structure shows the smallest gain, since the no-ontology pipeline already benefits from the structured refinement output format.
+
+% =============================================================================
+\section{Quantitative Precision: A Universal Weakness}
+\label{sec:quant-precision}
+% =============================================================================
+
+Quantitative precision is the lowest-scoring criterion for every pipeline: zero-shot scores 4.01, the two-step baseline 4.07, no-ontology 5.33, and the ontology-enhanced pipeline 5.93. The gap between quantitative precision and the overall score is 1.4--2.3 points for every pipeline, a consistent underperformance relative to other criteria. The ontology does improve quantitative precision significantly (+0.60 over no-ontology, $p < 0.001$; +1.92 over zero-shot), but even the best pipeline stays below the 6-point mark.
+
+The main cause is that the knowledge graph currently contains only document abstracts. Abstracts summarise findings in general terms and rarely include exact numbers, specific measurements, or detailed statistics. The full-text sections where those values appear, results tables, figure captions, method descriptions, are not available to the pipeline. Even when the ontology's centrality scores tell the refinement agent that quantitative detail should exist for a given topic, the source documents do not contain the numbers to extract. Mistral Small can reproduce numerical values when they appear in the input context, but it cannot generate accurate domain-specific numbers from its training data alone. The next chapter discusses how full-text indexing or structured data extraction could address this.
+
+% =============================================================================
+\section{Manual Failure Mode Analysis}
+\label{sec:failure-mode-analysis}
+% =============================================================================
+
+The scores reported above measure aggregate performance across 70~questions. To check whether the ontology-enhanced pipeline actually addresses the four specific failure modes from Chapter~\ref{chap:preliminaries}, we manually inspected the answers to the same four questions that originally exposed those failures. This section briefly compares the baseline and ontology-enhanced answers for each one.
+
+\paragraph{Delayed direct answers (\S\ref{subsec:delayed-answers-example}).} The original baseline answer to a question about vegetation health sensors spent roughly 600~words on spectral analysis and vegetation indices before naming a single sensor. The ontology-enhanced answer opens with: ``Optical satellite sensors are the primary tools for vegetation health monitoring, using visible, near-infrared (NIR), and shortwave infrared (SWIR) bands to derive indices such as NDVI, EVI, and FAPAR.'' The answer is in the first sentence. The labelled sections that follow (Optical Sensors, Microwave Sensors, Multi-Sensor Fusion) build outward from this core rather than toward it. The ontology's priority order of concepts tells the generation agent that the sensor itself should lead. This is consistent with the directness score improvement from 4.59 to 7.93.
+
+\paragraph{Missing quantitative precision (\S\ref{subsec:missing-precision-example}).} The baseline produced vague, hedge-heavy statements about sensor limitations without citing specific thresholds. The ontology-enhanced answer structures the same comparison as a table with concrete attributes (spectral bands, spatial resolution, cloud sensitivity) side by side. A comparison question now receives a comparative format. However, some table cells still use qualitative descriptors (``saturation at high biomass'') without specifying at what level saturation occurs. The source abstracts often do not contain these numbers, the same data limitation discussed in Section~\ref{sec:quant-precision}. Chapter~\ref{chap:discussion} discusses this further.
+
+\paragraph{Poor response structure (\S\ref{subsec:poor-structure-example}).} The baseline interleaved GEDI and Sentinel-1 information across paragraphs without clear separation when asked to compare the two sensors for boreal forest monitoring. The ontology-enhanced answer separates sensor descriptions into labelled bullet-point lists and adds an application comparison table with rows for canopy height mapping, aboveground biomass, wetland inundation, and temporal monitoring. Each row has columns for GEDI, Sentinel-1, and combined use. A reader can go directly to the attribute they care about and see both sensors side by side. The structured refinement output (Topics \& Information, Validated References, Caveats \& Gaps) gives the generation agent pre-organised material that maps naturally to this kind of layout.
+
+\paragraph{Context misalignment (\S\ref{subsec:context-misalignment-example}).} This was the most critical failure. The baseline reported accuracy values from a study on Japanese temperate coniferous forests as if they applied to boreal forests, without any geographic caveat. The ontology-enhanced answer opens with an explicit scope qualifier (``in coniferous forests'') and includes an Uncertainties and Limitations section that states: ``There are few direct, circumpolar boreal comparisons of GEDI versus Sentinel-1 AGB accuracy; most evidence comes from temperate or plantation coniferous forests, so boreal-specific performance must be inferred cautiously.'' The Japanese study still appears in the references, but its geographic context is now explicit rather than silently assumed to generalise. The ontology's spatial scope qualifiers are what enable this: they give the generation agent what it needs to caveat its claims. The scope awareness improvement from 4.54 to 7.63 reflects this gain.
