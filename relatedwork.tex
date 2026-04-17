@@ -22,7 +22,7 @@ Specialised fields rely on precise terminology, strict contextual boundaries, an
 
 The core difficulty is that semantic similarity in vector space does not capture the structural semantics of retrieved documents. Two documents can share domain vocabulary while addressing entirely different conditions, making one applicable and the other misleading. The real challenge is not retrieving documents that contain relevant keywords, but retrieving documents whose semantic content matches the semantic intent of the query~\citep{lewis2020retrieval}.
 
-A related problem is how models process long contexts built from multiple retrieved passages. \citet{liu2024lost} showed that performance drops sharply when key information falls in the middle of the input. For RAG systems that concatenate many documents, this means critical evidence can be buried and ignored during generation. Prompt engineering techniques such as reranking, context compression, and structured passage ordering have been proposed to reduce this risk~\citep{shi2023large, xu2023recomp}.
+A related problem is how models process long contexts built from multiple retrieved passages. \citet{liu2024lost} showed that performance drops sharply when key information falls in the middle of the input. For RAG systems that concatenate many documents, this means critical evidence can be buried and ignored during generation. Prompt engineering techniques such as reranking, context compression, and structured passage ordering have been proposed to reduce this risk~\citep{xu2023recomp}.
 
 \section{Earth Observation as a Domain}
 \label{sec:earth-observation-domain}
@@ -63,14 +63,14 @@ The previous sections showed that vector similarity alone does not capture the s
 
 Since~\citet{lewis2020retrieval} showed the benefits of combining retrieval with generation, many RAG variants have appeared. Most try to improve retrieval quality, reduce hallucinations, or support multi-step reasoning, yet the majority still rely on similarity-based retrieval and model the structure of the query only weakly.
 
-Iterative and multi-hop RAG approaches address the fact that many questions cannot be answered in a single retrieval step. Chain-of-thought augmented retrieval and multi-step pipelines have shown that question decomposition improves performance on multi-document reasoning tasks~\citep{yasunaga2023retrievalaugmentedcot}. However, retrieval in these systems is still surface-similarity driven, with no explicit mechanism to ensure the retrieved documents cover the semantic structure of the query.
+Iterative and multi-hop RAG approaches address the fact that many questions cannot be answered in a single retrieval step. Chain-of-thought augmented retrieval and multi-step pipelines have shown that question decomposition improves performance on multi-document reasoning tasks~\citep{trivedi2023ircot}. However, retrieval in these systems is still surface-similarity driven, with no explicit mechanism to ensure the retrieved documents cover the semantic structure of the query.
 
 \paragraph{The two-step baseline.} The EO RAG model developed by~\citet{elbaff2025earthobservationrag} retrieves documents from an Earth observation knowledge graph and passes them through a second generation step. This strategy improves groundability and answer quality on EO questions, particularly with open-source models. It is the starting point and primary baseline for our work. However, it performs no query-specific semantic structuring: retrieval and generation both operate without an explicit representation of what the query is actually asking. That gap is the central motivation for what we propose.
 
 \section{Ontologies and Graph-Grounded Retrieval}
 \label{sec:rw-ontologies}
 
-An ontology formalises the concepts, relationships, and restrictions within a domain~\citep{gruber1993ontology, fernandez2022ontologies}. This gives retrieval systems a structured vocabulary to match against rather than raw lexical similarity, and supports explicit reasoning over concept relations to resolve semantic relationships rather than just matching terms.
+An ontology formalises the concepts, relationships, and restrictions within a domain~\citep{gruber1993ontology}, giving retrieval systems a structured vocabulary to match against rather than raw lexical similarity, and supporting explicit reasoning over concept relations to resolve semantic relationships rather than just matching terms.
 
 Recent work has explored grounding RAG systems in domain ontologies to improve factual consistency. \citet{baek2024ograg} introduced OG-RAG, which organises retrieved documents according to a domain ontology rather than lexical co-occurrence. Other systems in industry have adopted similar approaches, using curated ontologies to structure both graph construction and retrieval, with reported gains in factual consistency over purely vector-based methods.
 
@@ -81,7 +81,7 @@ All of these systems confirm that adding structure on top of RAG improves factua
 \section{Multi-Agent LLM Systems}
 \label{sec:rw-multi-agent}
 
-When a task requires retrieval, semantic interpretation, and generation in sequence, expecting a single model to do all three reliably is unrealistic, especially for smaller open-source models. \citet{pan2023multiagent} showed that distributing a task across specialised LLM agents improves both reasoning quality and coordination between steps. \citet{zhao2025marag} extended this to RAG settings, showing that multi-agent orchestration improves both reasoning quality and factual consistency on knowledge-intensive tasks.
+When a task requires retrieval, semantic interpretation, and generation in sequence, expecting a single model to do all three reliably is unrealistic, especially for smaller open-source models. \citet{pan2023multiagent} argued that distributing a task across specialised LLM agents improves both reasoning quality and coordination between steps. \citet{zhao2025marag} extended this to RAG settings, showing that multi-agent orchestration improves both reasoning quality and factual consistency on knowledge-intensive tasks.
 
 The multi-agent design here is not about autonomous reasoning but about enforcing semantic checkpoints at each stage. Our agents follow a fixed sequence: the ontology agent extracts the query-specific semantic structure, the refinement agent evaluates retrieved passages against that ontology, and the generation agent produces the final answer in a controlled format. The ontology agent's output works as a checklist of required conditions that the refinement agent enforces.
 

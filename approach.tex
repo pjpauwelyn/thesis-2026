@@ -179,7 +179,7 @@ Several design decisions shape the prompt:
 \item \textbf{Category coverage.} At least four of five dimensions must be represented, so the question is broken into distinct scientific aspects~\citep{berant2013semantic} rather than treated as a single query string.
 \item \textbf{Specific values.} Contrasting examples (\texttt{glacier\_velocity} vs.\ \texttt{change}) push the model toward values the Refinement Agent can actually match against.
 \item \textbf{Strict JSON output.} A fixed schema ensures the response can be parsed directly without post-processing~\citep{bechard2024reducing}.
-\item \textbf{Validation checklist.} Before returning, the model checks whether a domain expert could answer the question using only the extracted pairs~\citep{wei2022chain}.
+\item \textbf{Validation checklist.} Before returning, the model checks whether a domain expert could answer the question using only the extracted pairs.
 \end{itemize}
 
 The complete prompt is provided in Listing~\ref{lst:ontology-prompt} (Appendix~\ref{app:prompt-ontology}).
