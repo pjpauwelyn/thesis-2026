@@ -4,7 +4,7 @@
 \section{Context and Motivation}
 \label{sec:context}
 
-Large language models (LLMs) hallucinate, and in scientific domains the consequences are more significant than in less critical settings. The most direct mitigation is to ground generation in retrieved evidence, the core idea behind Retrieval-Augmented Generation (RAG). A RAG system adds documents such as papers, articles, and web pages to the model's input, retrieved by term-based methods, semantic embeddings, or both. Over the past few years, this approach has become a promising path towards reliable AI in scientific domains, where answers need correct terminology, quantitative precision, and explicit source attribution~\citep{lewis2020retrieval}.
+Large language models (LLMs) hallucinate, and in scientific domains the consequences are more significant than in less critical settings. The most direct mitigation is to ground generation in retrieved evidence, the core idea behind Retrieval-Augmented Generation (RAG). A RAG system adds documents such as papers, articles, and web pages to the model's input, retrieved by term-based methods, semantic embeddings, or both. This approach has become central to reliable AI in scientific domains, where answers need correct terminology, quantitative precision, and explicit source attribution~\citep{lewis2020retrieval}.
 
 Earth observation (EO) is a domain that is particularly sensitive to all of these. It spans remote sensing, climate monitoring, and environmental assessment, and it relies on specialised vocabulary, quantitative accuracy, and strict temporal and spatial context. Each measurement or study only makes sense in context: which sensors were used, what was measured, when and where, and under which conditions.
 
@@ -20,7 +20,7 @@ After systematic manual analysis of baseline answers, the two-step baseline~\cit
 \subsection{Key Shortcomings}
 \label{subsec:shortcomings}
 
-We evaluated how well the baseline model handled questions of varying complexity and type, focusing on domain-specific queries that combine multiple concepts and require both reasoning and specialised data. We compared the baseline against Anthropic's Claude Sonnet 4.5 and OpenAI's GPT-5.1. After an initial observation of the main faults, we refined the prompts and added extra instructions, before settling on four main shortcomings. We will briefly go over these. Further examples and analysis will be covered in Chapter~\ref{chap:preliminaries}.
+We evaluated how well the baseline model handled questions of varying complexity and type, focusing on domain-specific queries that combine multiple concepts and require both reasoning and specialised data. We compared the baseline against Anthropic's Claude Sonnet 4.5 and OpenAI's GPT-5.1. After an initial observation of the main faults, we refined the prompts and added extra instructions, before settling on four main shortcomings. Further examples and analysis are covered in Chapter~\ref{chap:preliminaries}.
 
 \subparagraph{1. Delayed direct answers}
 
@@ -63,20 +63,11 @@ This thesis contributes to open-source RAG systems for scientific domains in the
 
 \item \textbf{Design and implementation of an ontology-enhanced three-agent pipeline.} We designed a multi-agent architecture in which an ontology agent, a refinement agent, and a generation agent each enforce explicit semantic reasoning about the query, acting as guardrails against hallucination and context drift.
 
-\item \textbf{Integration of query-specific ontologies with refinement and generation.} The pipeline generates a compact, query-specific ontology for each query rather than relying on a static domain taxonomy. This ontology covers five semantic dimensions, temporal scope, spatial scope, application domain, sensor/method, and biophysical variable, and is used to filter documents and guide answer construction.
+\item \textbf{Integration of query-specific ontologies with refinement and generation.} The pipeline generates a compact, query-specific ontology for each query rather than relying on a static domain taxonomy. This ontology covers five semantic dimensions: temporal scope, spatial scope, application domain, sensor/method, and biophysical variable, and is used to filter documents and guide answer construction.
 
 \item \textbf{Tailored multi-criteria LLM-as-a-judge evaluation framework.} We developed an eight-criterion evaluation framework using Claude Sonnet~4.6 as judge on a 1--10 scale, addressing score saturation and context-length biases observed in earlier configurations. We compared four pipeline variants across 70~Earth observation questions.
 
 \item \textbf{Per-criterion and qualitative error analysis.} The evaluation doesn't only include mean scores: per-criterion and per-question results are analysed alongside manual error investigation to identify both the strengths and remaining limitations of the ontology-enhanced approach.
-
-\section{Retrieval-Augmented Generation}
-\label{sec:rag-fundamentals}
-
-The most direct way to deal with hallucinations from Large Language Models (LLMs) is to ground their outputs in verified external evidence at generation. That is the core idea behind Retrieval-Augmented Generation (RAG). \citet{lewis2020retrieval} showed that a retrieval step added to a generative model makes answers more factual and traceable to sources, outperforming models that rely on parameters alone. Rather than depending on the LLM's training knowledge, a RAG system retrieves relevant documents and assembles them into a \emph{context} that conditions the final answer. This makes it well suited to domains where factual correctness can be checked against explicit evidence.
-
-A standard RAG pipeline runs in four steps. The query is first encoded as a vector embedding. The most relevant documents are then selected from the corpus using dense similarity search, lexical matching, or a combination of both, typically organised as a knowledge graph or vector database. The retrieved set is filtered, ranked, and refined. Finally, the generation model produces an answer conditioned on both the query and the refined context.
-
-RAG does not remove all failure modes. A system can retrieve partially relevant information, misinterpret it, overgeneralise, or miss the specific detail a question requires. Having access to relevant documents is not enough if the model cannot correctly interpret and integrate them~\citep{lewis2020retrieval}.
 \end{enumerate}
 
 While developed for Earth observation, the principles of query-adaptive ontology generation and semantic document refinement apply to other domains where queries are inherently multi-dimensional and source context cannot be ignored.
@@ -84,4 +75,4 @@ While developed for Earth observation, the principles of query-adaptive ontology
 \section{Thesis Structure}
 \label{sec:structure}
 
-The remainder of this thesis is organised as follows. Chapter~\ref{chap:background} covers background on RAG systems and Earth observation, and reviews related work on ontology-grounded retrieval, multi-agent systems, and LLM-based evaluation. Chapter~\ref{chap:preliminaries} deepens the analysis of the baseline model's shortcomings with detailed examples. Chapter~\ref{chap:approach} presents the three-agent architecture, specifying each agent's role and showing how the design addresses each identified shortcoming. Chapter~\ref{chap:evaluation} describes the evaluation framework: the dataset of 70~EO questions, four pipeline variants, and the multi-criteria LLM-as-a-judge methodology. Chapter~\ref{chap:results} reports quantitative results, compares the four variants, and identifies failure modes through detailed examples. Chapter~\ref{chap:discussion} interprets the results, discusses limitations. Finally, Chapter~\ref{chap:conclusion} reflects on possible future work and concludes by revisiting the research questions.
+The remainder of this thesis is organised as follows. Chapter~\ref{chap:background} covers background on RAG systems and Earth observation, and reviews related work on ontology-grounded retrieval, multi-agent systems, and LLM-based evaluation. Chapter~\ref{chap:preliminaries} deepens the analysis of the baseline model's shortcomings with detailed examples. Chapter~\ref{chap:approach} presents the three-agent architecture, specifying each agent's role and showing how the design addresses each identified shortcoming. Chapter~\ref{chap:evaluation} describes the evaluation framework: the dataset of 70~EO questions, four pipeline variants, and the multi-criteria LLM-as-a-judge methodology. Chapter~\ref{chap:results} reports quantitative results, compares the four variants, and identifies failure modes through detailed examples. Chapter~\ref{chap:discussion} interprets the results and discusses limitations. Finally, Chapter~\ref{chap:conclusion} reflects on possible future work and concludes by revisiting the research questions.
