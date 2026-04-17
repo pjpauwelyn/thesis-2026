@@ -10,9 +10,9 @@ This chapter is divided into two parts. The first (Sections~\ref{sec:rag-fundame
 \section{Retrieval-Augmented Generation}
 \label{sec:rag-fundamentals}
 
-The most direct way to deal with hallucinations from Large Language Models (LLMs) is to ground their outputs in verified external evidence at generation. This is what Retrieval-Augmented Generation (RAG) does. \citet{lewis2020retrieval} showed that a retrieval step added to a generative model makes answers more factual and traceable to sources, outperforming models that rely on parameters alone. Rather than depending on the LLM's training knowledge, a RAG system retrieves relevant documents and assembles them into a \emph{context} that conditions the final answer. This makes it well suited to domains where factual correctness can be checked against explicit evidence.
+The most direct way to deal with hallucinations from Large Language Models (LLMs) is to ground their outputs in verified external evidence at generation. That is the core idea behind Retrieval-Augmented Generation (RAG). \citet{lewis2020retrieval} showed that a retrieval step added to a generative model makes answers more factual and traceable to sources, outperforming models that rely on parameters alone. Rather than depending on the LLM's training knowledge, a RAG system retrieves relevant documents and assembles them into a \emph{context} that conditions the final answer. This makes it well suited to domains where factual correctness can be checked against explicit evidence.
 
-A standard RAG pipeline has four steps. The query is first encoded as a vector embedding. The most relevant documents are then selected from the corpus using dense similarity search, lexical matching, or a combination of both, typically organised as a knowledge graph or vector database. The retrieved set is filtered, ranked, and refined. Finally, the generation model produces an answer conditioned on both the query and the refined context.
+A standard RAG pipeline runs in four steps. The query is first encoded as a vector embedding. The most relevant documents are then selected from the corpus using dense similarity search, lexical matching, or a combination of both, typically organised as a knowledge graph or vector database. The retrieved set is filtered, ranked, and refined. Finally, the generation model produces an answer conditioned on both the query and the refined context.
 
 RAG does not remove all failure modes. A system can retrieve partially relevant information, misinterpret it, overgeneralise, or miss the specific detail a question requires. Having access to relevant documents is not enough if the model cannot correctly interpret and integrate them~\citep{lewis2020retrieval}.
 
@@ -70,7 +70,7 @@ Iterative and multi-hop RAG approaches address the fact that many questions cann
 \section{Ontologies and Graph-Grounded Retrieval}
 \label{sec:rw-ontologies}
 
-An ontology formalises the concepts, relationships, and restrictions within a domain~\citep{gruber1993ontology}, giving retrieval systems a structured vocabulary to match against rather than raw lexical similarity, and supporting explicit reasoning over concept relations to resolve semantic relationships rather than just matching terms.
+An ontology formalises the concepts, relationships, and restrictions within a domain~\citep{gruber1993ontology}. This gives retrieval systems a structured vocabulary to match against rather than raw lexical similarity, and supports explicit reasoning over concept relations rather than just matching terms.
 
 Recent work has explored grounding RAG systems in domain ontologies to improve factual consistency. \citet{baek2024ograg} introduced OG-RAG, which organises retrieved documents according to a domain ontology rather than lexical co-occurrence. Other systems in industry have adopted similar approaches, using curated ontologies to structure both graph construction and retrieval, with reported gains in factual consistency over purely vector-based methods.
 
@@ -85,7 +85,7 @@ When a task requires retrieval, semantic interpretation, and generation in seque
 
 The multi-agent design here is not about autonomous reasoning but about enforcing semantic checkpoints at each stage. Our agents follow a fixed sequence: the ontology agent extracts the query-specific semantic structure, the refinement agent evaluates retrieved passages against that ontology, and the generation agent produces the final answer in a controlled format. The ontology agent's output works as a checklist of required conditions that the refinement agent enforces.
 
-Splitting these steps reduces the chance that one model handles both interpretation and generation without adequate checks on contextual relevance. It is especially relevant for open-source small models, which are often not capable of handling retrieval, semantic interpretation, and generation in one pass. Unlike more generic multi-agent frameworks that focus on reasoning depth or tool use, our focus is on using the ontology to constrain what each agent retrieves, filters, and generates.
+Splitting these steps reduces the chance that one model handles both interpretation and generation without adequate checks on contextual relevance. Unlike more generic multi-agent frameworks that focus on reasoning depth or tool use, our focus is on using the ontology to constrain what each agent retrieves, filters, and generates.
 
 \section{LLM-as-a-Judge Evaluation}
 \label{sec:rw-llm-judge}
@@ -96,7 +96,7 @@ Correct answers to open-ended scientific questions can take many valid forms, an
 
 These biases directly shaped our evaluation design. To address these, we use single-answer grading rather than pairwise comparison (avoiding position bias), include a directness criterion that penalises length without informational content, and choose a judge model (Claude Sonnet~4.6) distinct from the generation model (Mistral Small) to avoid self-enhancement bias. An earlier configuration using GPT-4.1-mini with five criteria showed score saturation and limited discriminative power. The final framework uses a larger model, with eight criteria on a 1--10 scale, allowing more meaningful distinctions between pipeline variants.
 
-We adopt the LLM-as-a-judge approach for scalable, explainable evaluation of open-ended question answering. Rather than adapting generic evaluation criteria, we design criteria specific to scientific question answering, including quantitative precision and scope awareness, and refine the configuration iteratively based on observed scoring biases.
+Rather than adapting generic evaluation criteria, we design criteria specific to scientific question answering, including quantitative precision and scope awareness, and refine the configuration iteratively based on observed scoring biases.
 
 \section{Research Gap}
 \label{sec:rw-gap}

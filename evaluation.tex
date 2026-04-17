@@ -4,7 +4,7 @@
 \section{Introduction}
 \label{sec:eval-intro}
 
-This chapter describes how we evaluate the four pipeline variants introduced in Chapter~\ref{chap:approach}. We use a dataset of 70~Earth observation (EO) questions and a large language model (LLM)-as-a-judge framework with eight criteria scored on a 1--10 scale. We test for significant differences using non-parametric methods. The chapter first describes the evaluation dataset (\S\ref{sec:dataset}) and the pipeline variants under comparison (\S\ref{sec:pipeline-variants}). We then describe two framework versions: an initial version using GPT-4.1-mini that showed important limitations (\S\ref{sec:initial-framework}), and the final version using Claude Sonnet~4.6 that fixes those limitations (\S\ref{sec:final-framework}). We end with the significance testing method (\S\ref{sec:significance-testing}).
+This chapter describes how we evaluate the four pipeline variants introduced in Chapter~\ref{chap:approach}. We use a dataset of 70~Earth observation (EO) questions and a large language model (LLM)-as-a-judge framework with eight criteria scored on a 1--10 scale. The chapter first describes the evaluation dataset (\S\ref{sec:dataset}) and the pipeline variants under comparison (\S\ref{sec:pipeline-variants}). We then describe two framework versions: an initial version using GPT-4.1-mini that showed important limitations (\S\ref{sec:initial-framework}), and the final version using Claude Sonnet~4.6 that fixes those limitations (\S\ref{sec:final-framework}). We end with the significance testing method (\S\ref{sec:significance-testing}).
 
 %% ============================================================
 \section{Evaluation Dataset}
@@ -40,7 +40,7 @@ We compare four pipeline configurations. All use Mistral Small 24B as the genera
 
 \item[Two-step baseline.] The pipeline described by~\citet{elbaff2025earthobservationrag}: a zero-shot draft refined using raw context from the EO knowledge graph. It uses no ontology, no intermediate document assessment, and the original DLR generation prompt.
 
-\item[No-ontology RAG.] This variant uses the same improved Refinement and Generation Agent prompts as the ontology-enhanced pipeline, but the Refinement Agent receives no ontology. It evaluates documents based on the question text alone. This ablation isolates the ontology's contribution from prompt engineering improvements.
+\item[no-ontology variant.] This variant uses the same improved Refinement and Generation Agent prompts as the ontology-enhanced pipeline, but the Refinement Agent receives no ontology. It evaluates documents based on the question text alone. This ablation isolates the ontology's contribution from prompt engineering improvements.
 
 \item[Ontology-enhanced pipeline.] The full system described in Chapter~\ref{chap:approach}: ontology construction, ontology-guided refinement, and enhanced generation. This is the primary contribution variant.
 \end{description}
@@ -63,7 +63,7 @@ Our initial evaluation used GPT-4.1-mini as the judge with five criteria on a 1-
 \subsection{Final Framework}
 \label{sec:final-framework}
 
-The final framework replaces GPT-4.1-mini with Claude Sonnet~4.6 and expands to eight criteria on a 1--10 scale, avoiding the ceiling effects that limited the initial framework. We switched to Claude Sonnet~4.6 to remove self-enhancement bias. The generation model is from the Mistral family, which is not an Anthropic model, so a Claude-based judge cannot favour its own outputs.
+The final framework replaces GPT-4.1-mini with Claude Sonnet~4.6 and expands to eight criteria on a 1--10 scale, avoiding the score saturation that limited the initial framework. We switched to Claude Sonnet~4.6 to remove self-enhancement bias.
 
 \subsubsection{Evaluation Criteria}
 \label{subsubsec:criteria}
@@ -93,7 +93,7 @@ The average inter-criterion Pearson correlation across all 280~evaluations is $r
 \subsection{Evaluation Protocol}
 \label{subsec:eval-protocol}
 
-For each question-answer pair, the judge receives the system prompt with criteria definitions and score range descriptions, followed by the question and the answer. It returns eight integer scores. Each pair is evaluated on its own; the judge never sees answers from other pipeline variants for comparison. This single-answer grading approach avoids position bias~\citep{zheng2023judging}. The Directness criterion explicitly penalises unnecessary verbosity.
+For each question-answer pair, the judge receives the system prompt with criteria definitions and score range descriptions, followed by the question and the answer. It returns eight integer scores. Each pair is evaluated on its own. This single-answer grading approach avoids position bias~\citep{zheng2023judging}. The Directness criterion explicitly penalises unnecessary verbosity.
 
 We compute per-pipeline means for each criterion and for the overall score. Per-question score distributions are used for significance testing and per-question analysis.
 
@@ -120,4 +120,4 @@ We perform six pairwise comparisons (the number of pairs from four pipeline vari
 \subsection{Effect Size}
 \label{subsec:effect-size}
 
-A significant result does not automatically mean the difference matters in practice, especially with 70~paired observations where the test has enough power to flag even small differences as significant. We therefore report an effect size estimate for each significant finding using the rank-biserial correlation $r$, calculated from the Wilcoxon test statistic~\citep{kerby2014simple}. We interpret $r \geq 0.1$ as small, $r \geq 0.3$ as medium, and $r \geq 0.5$ as large. We report results as significant only when both the corrected $p$-value and the effect size meet their respective thresholds.
+A significant result does not mean the difference matters in practice, especially with 70~paired observations where the test has enough power to flag even small differences as significant. We therefore report an effect size estimate for each significant finding using the rank-biserial correlation $r$, calculated from the Wilcoxon test statistic~\citep{kerby2014simple}. We interpret $r \geq 0.1$ as small, $r \geq 0.3$ as medium, and $r \geq 0.5$ as large. We report results as significant only when both the corrected $p$-value and the effect size meet their respective thresholds.
