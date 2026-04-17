@@ -4,7 +4,7 @@
 \section{Introduction}
 \label{sec:eval-intro}
 
-This chapter describes how we evaluate the four pipeline variants introduced in Chapter~\ref{chap:approach}. We use a dataset of 70~Earth observation (EO) questions and a large language model (LLM)-as-a-judge framework with eight criteria scored on a 1--10 scale. The chapter first describes the evaluation dataset (\S\ref{sec:dataset}) and the pipeline variants under comparison (\S\ref{sec:pipeline-variants}). We then describe two framework versions: an initial version using GPT-4.1-mini that showed important limitations (\S\ref{sec:initial-framework}), and the final version using Claude Sonnet~4.6 that fixes those limitations (\S\ref{sec:final-framework}). We end with the significance testing method (\S\ref{sec:significance-testing}).
+This chapter describes how we evaluate the four pipeline variants introduced in Chapter~\ref{chap:approach}. We use a dataset of 70~Earth observation (EO) questions and a large language model (LLM)-as-a-judge framework with eight criteria scored on a 1--10 scale.
 
 %% ============================================================
 \section{Evaluation Dataset}
@@ -40,7 +40,7 @@ We compare four pipeline configurations. All use Mistral Small 24B as the genera
 
 \item[Two-step baseline.] The pipeline described by~\citet{elbaff2025earthobservationrag}: a zero-shot draft refined using raw context from the EO knowledge graph. It uses no ontology, no intermediate document assessment, and the original DLR generation prompt.
 
-\item[no-ontology variant.] This variant uses the same improved Refinement and Generation Agent prompts as the ontology-enhanced pipeline, but the Refinement Agent receives no ontology. It evaluates documents based on the question text alone. This ablation isolates the ontology's contribution from prompt engineering improvements.
+\item[No-Ontology variant.] This variant uses the same improved Refinement and Generation Agent prompts as the ontology-enhanced pipeline, but the Refinement Agent receives no ontology. It evaluates documents based on the question text alone. This ablation isolates the ontology's contribution from prompt engineering improvements.
 
 \item[Ontology-enhanced pipeline.] The full system described in Chapter~\ref{chap:approach}: ontology construction, ontology-guided refinement, and enhanced generation. This is the primary contribution variant.
 \end{description}
@@ -63,7 +63,7 @@ Our initial evaluation used GPT-4.1-mini as the judge with five criteria on a 1-
 \subsection{Final Framework}
 \label{sec:final-framework}
 
-The final framework replaces GPT-4.1-mini with Claude Sonnet~4.6 and expands to eight criteria on a 1--10 scale, avoiding the score saturation that limited the initial framework. We switched to Claude Sonnet~4.6 to remove self-enhancement bias.
+The final framework replaces GPT-4.1-mini with Claude Sonnet~4.6 (reducing self-enhancement bias) and expands to eight criteria on a 1--10 scale, avoiding the score saturation that limited the initial framework.
 
 \subsubsection{Evaluation Criteria}
 \label{subsubsec:criteria}
@@ -86,14 +86,14 @@ The eight criteria divide into two groups:
 \item[Helpfulness (1--10):] Is the answer practically useful to someone researching the topic?
 \end{description}
 
-The four thesis-specific criteria (Directness, Quantitative Precision, Response Structure, and Scope Awareness) were not part of the initial GPT-4.1-mini framework (Appendix~\ref{app:initial-criteria}). Full score-band descriptions for all eight criteria are given in Appendix~\ref{app:eval-criteria}.
+The four thesis-specific criteria above were not part of the initial GPT-4.1-mini framework (Appendix~\ref{app:initial-criteria}). Full score-band descriptions for all eight criteria are given in Appendix~\ref{app:eval-criteria}.
 
 The average inter-criterion Pearson correlation across all 280~evaluations is $r = 0.65$. This means that a better answer tends to score higher on multiple dimensions at the same time. An answer that misaligns context (low Scope Awareness) is also likely to be less helpful and less scientifically accurate. The moderate correlation does not undermine the criteria's usefulness: the goal is to identify \emph{where} a pipeline improves, not to treat each dimension as independent.
 
 \subsection{Evaluation Protocol}
 \label{subsec:eval-protocol}
 
-For each question-answer pair, the judge receives the system prompt with criteria definitions and score range descriptions, followed by the question and the answer. It returns eight integer scores. Each pair is evaluated on its own. This single-answer grading approach avoids position bias~\citep{zheng2023judging}. The Directness criterion explicitly penalises unnecessary verbosity.
+For each question-answer pair, the judge receives the system prompt with criteria definitions and score range descriptions, followed by the question and the answer. It returns eight integer scores. Each pair is evaluated on its own. This single-answer grading approach avoids position bias~\citep{zheng2023judging}.
 
 We compute per-pipeline means for each criterion and for the overall score. Per-question score distributions are used for significance testing and per-question analysis.
 
@@ -115,7 +115,7 @@ We use the Wilcoxon signed-rank test~\citep{wilcoxon1945individual} for all pair
 \subsection{Correction for Multiple Comparisons}
 \label{subsec:multiple-comparisons}
 
-We perform six pairwise comparisons (the number of pairs from four pipeline variants) for each of the eight criteria. We apply Bonferroni correction within each criterion: $\alpha = 0.05$ divided across six pairwise comparisons gives $\alpha_{\text{corrected}} = 0.0083$ per test. Across all eight criteria, this amounts to 48 individual tests in total. When a corrected $p$-value falls below this threshold, we report the difference as statistically significant.
+We perform six pairwise comparisons (the number of pairs from four pipeline variants) for each of the eight criteria. We apply Bonferroni correction within each criterion: $\alpha = 0.05$ divided across six pairwise comparisons gives $\alpha_{\text{corrected}} = 0.0083$ per test. Across all eight criteria, this amounts to 48 individual tests. When a corrected $p$-value falls below this threshold, we report the difference as statistically significant.
 
 \subsection{Effect Size}
 \label{subsec:effect-size}

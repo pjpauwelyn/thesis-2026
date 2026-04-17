@@ -14,8 +14,6 @@ We introduce three specialised agents that add to the existing knowledge-graph r
 \item A \textbf{Generation Agent} that produces the final answer in two steps: a zero-shot draft followed by a context-grounded refinement that enforces structure, scope awareness, and quantitative accuracy.
 \end{enumerate}
 
-We begin with the overall architecture and design principles in Section~\ref{sec:system-overview}, then detail each agent in Sections~\ref{sec:ontology-agent}--\ref{sec:generation-agent}.
-
 %% ============================================================
 \section{System Overview}
 \label{sec:system-overview}
@@ -24,7 +22,7 @@ We begin with the overall architecture and design principles in Section~\ref{sec
 \subsection{Design Principles}
 \label{subsec:design-principles}
 
-Four principles guide the architecture.
+Three principles guide the architecture.
 
 \begin{description}
 \item[Semantic alignment.] Every stage processes information in relation to the query's structured requirements. The ontology is the shared contract: the Ontology Agent produces it, the Refinement Agent enforces it, and the Generation Agent consults it.
@@ -95,8 +93,8 @@ The prompt requires coverage of at least four of five mandatory dimensions:
 \begin{description}
 \item[Biophysical variable:] What is being measured (e.g., above-ground biomass, Normalised Difference Vegetation Index (NDVI), sea ice extent).
 \item[Sensor/Method:] The observation platform or measurement technique (e.g., Sentinel-2, Synthetic Aperture Radar (SAR) backscatter regression).
-\item[Spatial qualifier:] Geographic scope or resolution (e.g., boreal forest, Arctic, 1~km resolution).
-\item[Temporal qualifier:] Time period or temporal resolution (e.g., decadal trends, 2000--present).
+\item[Spatial scope:] Geographic scope or resolution (e.g., boreal forest, Arctic, 1~km resolution).
+\item[Temporal scope:] Time period or temporal resolution (e.g., decadal trends, 2000--present).
 \item[Application domain:] Scientific purpose (e.g., biomass estimation, climate assessment).
 \end{description}
 
@@ -130,7 +128,7 @@ Multiple attributes can receive 1.0 or 0.9. Pair count scales with complexity: 4
 \subsection{Prompt Design}
 \label{subsec:ontology-prompt-design}
 
-The ontology extraction prompt is shown in Listing~\ref{lst:ontology-prompt-excerpt}. Several deliberate design decisions shape its structure.
+The ontology extraction prompt is shown in Listing~\ref{lst:ontology-prompt-excerpt}.
 
 \begin{lstlisting}[language={}, caption={Key sections of the ontology extraction prompt.}, label={lst:ontology-prompt-excerpt}]
 TASK: Extract semantic attributes from Earth Observation questions
@@ -252,7 +250,7 @@ The \texttt{Caveats \& Gaps} section closes the loop by reporting which ontology
 \subsection{Prompt Design}
 \label{subsec:refinement-prompt-design}
 
-Listing~\ref{lst:refinement-prompt-excerpt} shows the key sections of the refinement prompt. Its design reflects several techniques used in combination.
+Listing~\ref{lst:refinement-prompt-excerpt} shows the key sections of the refinement prompt.
 
 \begin{lstlisting}[language={}, caption={Key sections of the refinement prompt.}, label={lst:refinement-prompt-excerpt}]
 INPUT:
@@ -328,7 +326,7 @@ The complete prompts for both the ontology-enhanced and no-ontology variants are
 \subsection{Role and Input/Output}
 \label{subsec:generation-role}
 
-The Generation Agent turns the curated context from the Refinement Agent into a structured, research-quality answer. Its design is intentionally focused. It refines an existing draft using the structured context from the Refinement Agent. The agent follows the baseline's two-step pattern, extended with an enriched Step~2 prompt. In Step~1, the question alone is sent to the LLM to produce a zero-shot draft. In Step~2, this draft is refined using the structured context from the Refinement Agent, producing a final answer with inline citations and a reference list.
+The Generation Agent turns the curated context from the Refinement Agent into a structured, research-quality answer. The agent follows the baseline's two-step pattern, extended with an enriched Step~2 prompt. In Step~1, the question alone is sent to the LLM to produce a zero-shot draft. In Step~2, this draft is refined using the structured context from the Refinement Agent, producing a final answer with inline citations and a reference list.
 
 The only change is in the Step~2 prompt. The baseline's Step~2 offered minimal guidance; the revised prompt adds explicit rules for integrating the draft with the context, adapting structure to question type, preserving quantitative scope, and grounding citations.
 
@@ -347,12 +345,12 @@ In Step~2, the prompt receives the question, the draft, and the refined context.
 \item When \emph{multiple context items} report related findings, synthesise explicitly (``Several studies show\ldots'') with numeric citations, rather than listing each document separately.
 \end{enumerate}
 
-This ordering ensures that retrieved, scope-tagged evidence dominates quantitative claims and geographic context, while the draft contributes general background that the retrieval corpus may not cover. Retrieved, scope-tagged evidence takes priority over parametric knowledge for specifics; parametric knowledge fills in established background~\citep{lewis2020retrieval}.
+This ordering ensures that retrieved, scope-tagged evidence dominates quantitative claims and geographic context, while the draft contributes general background that the retrieval corpus may not cover.
 
 \subsection{Prompt Design}
 \label{subsec:generation-prompt-design}
 
-Listing~\ref{lst:generation-prompt-excerpt} shows the key sections of the generation refinement prompt. The design addresses each of the four failure patterns from Chapter~\ref{chap:preliminaries}.
+Listing~\ref{lst:generation-prompt-excerpt} shows the key sections of the generation refinement prompt.
 
 \begin{lstlisting}[language={}, caption={Key sections of the generation refinement prompt.}, label={lst:generation-prompt-excerpt}]
 Most important rules (follow even if other instructions conflict):
@@ -423,7 +421,7 @@ The complete generation refinement prompt is provided in Listing~\ref{lst:genera
 \label{sec:pipeline-integration}
 %% ============================================================
 
-The three agents integrate into the existing pipeline at clearly defined boundaries. The Ontology Agent is inserted \emph{before retrieval}: it receives the raw question and produces the ontology, but does not modify the AQL query itself. The Refinement Agent is inserted \emph{after retrieval, before generation}: it replaces the baseline's direct forwarding of the parsed original context (presented previously in Section~\ref{sec:generation-context}). The Generation Agent replaces only the Step~2 refinement prompt; Step~1 remains unchanged from the baseline.
+The three agents integrate into the existing pipeline at clearly defined boundaries. The Ontology Agent is inserted \emph{before retrieval}: it receives the raw question and produces the ontology, but does not modify the AQL query itself. The Refinement Agent is inserted \emph{after retrieval, before generation}: it replaces the baseline's direct forwarding of the parsed original context (Section~\ref{sec:generation-context}). The Generation Agent replaces only the Step~2 refinement prompt; Step~1 remains unchanged from the baseline.
 
 A single query uses four LLM calls: one for ontology construction, one for context refinement, and two for generation (draft and refinement). The baseline uses two. Per-query token usage across all agents ranges from 5{,}000 to 7{,}500 tokens, comfortably within the context window of Mistral Small 24B.
 
@@ -432,8 +430,8 @@ A single query uses four LLM calls: one for ontology construction, one for conte
 \label{sec:hypothesis}
 %% ============================================================
 
-Based on the failure analysis in Chapter~\ref{chap:preliminaries} and the literature on LLM context utilisation, we expect the largest gains on \textbf{directness} and \textbf{scope awareness}. The prompt improvements target these two criteria most directly: directness through the opening-answer mandate, and scope awareness through the ontology's spatial and temporal qualifiers combined with the Refinement Agent's scope-tagging. As shown in Chapter~\ref{chap:preliminaries}, the baseline's retrieval step actively hurts directness (dropping from 6.67 zero-shot to 4.59 with context), suggesting that structured guidance is needed for retrieval to improve directness rather than degrade it.
+Based on the failure analysis in Chapter~\ref{chap:preliminaries} and the literature on LLM context utilisation, we expect the largest gains on \textbf{directness} and \textbf{scope awareness}. The prompt improvements target these two criteria most directly: directness through the opening-answer mandate, and scope awareness through the ontology's spatial and temporal qualifiers combined with the Refinement Agent's scope-tagging. As reported in Chapter~\ref{chap:results}, the baseline's retrieval step actively hurts directness (dropping from 6.67 zero-shot to 4.59 with context), suggesting that structured guidance is needed for retrieval to improve directness rather than degrade it.
 
 We also expect gains on response structure and scientific accuracy. Quantitative precision should improve but will likely remain the hardest criterion, since it depends on whether the source abstracts actually contain specific numbers. We return to this in the results discussion.
 
-The no-ontology variant serves as the primary ablation: if the ontology-enhanced pipeline outperforms it, the improvement is attributable to ontology-guided semantic reasoning rather than to the general prompt improvements both variants share. The next chapter describes the evaluation methodology.
+The no-ontology variant serves as the primary ablation: if the ontology-enhanced pipeline outperforms it, the improvement is attributable to ontology-guided semantic reasoning rather than to the general prompt improvements both variants share.

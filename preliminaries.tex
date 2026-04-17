@@ -1,11 +1,6 @@
 \chapter{Preliminaries and Problem Analysis}
 \label{chap:preliminaries}
 
-\section{Introduction}
-\label{sec:prelim-intro}
-
-We covered RAG architectures, ontologies, and multi-agent systems and reviewed their literature. In this chapter we evaluate the performance of the baseline pipeline~\citep{elbaff2025earthobservationrag} and analyse where it falls short. We describe how we tested it (\S\ref{sec:testing-methodology}), introduce the four recurring failure patterns with examples (\S\ref{sec:failure-patterns}), look at the retrieval context the generation agent receives (\S\ref{sec:generation-context}), trace the failures to their likely root causes (\S\ref{sec:root-causes}), and lay out the design decisions (\S\ref{sec:design-decisions}) behind the multi-agent ontology-enhanced approach described in Chapter~\ref{chap:approach}.
-
 %% ============================================================
 \section{Testing Methodology}
 \label{sec:testing-methodology}
@@ -80,8 +75,6 @@ Each of the four patterns below is illustrated with a representative question, t
 
 \paragraph{Question.} \textit{``How does the accuracy of above-ground biomass estimation compare between GEDI lidar data and Sentinel-1 SAR backscatter in boreal forests?''}
 
-This is the most concerning example because it shows how multiple shortcomings compound into a misleading answer.
-
 \paragraph{Baseline behaviour.} The model reported: ``Sentinel-1/Sentinel-2 fusion achieved R\textsuperscript{2} 0.79 to 0.84 and RMSE 7.97 to 29.42 Mg/ha.'' Those values come from a study on Japanese temperate coniferous forests, but the answer did not flag this. A reader would reasonably assume the metrics apply to boreal forests, since that is what the question asked about. The answer said nothing about boreal-specific factors.
 
 \paragraph{Cascading failure.} We re-prompted with explicit instructions to distinguish general from boreal-specific statements. The answer still failed. It spent about 500~words on background before reaching a boreal forests subsection (delayed directness). That subsection opened with a general claim that ``higher RMSE values are often observed'' for above-ground biomass, then cited a study and reported RMSE values for terrain elevation and canopy height, which are metrics unrelated to biomass (context misalignment). The same subsection referenced the Japanese coniferous forest study again without noting its geographic scope (context misalignment). The study does report RMSE values for above-ground biomass in temperate forests, but the model did not extract them (missing quantitative precision). The resulting subsection amounted to unsupported claims built on evidence from an out-of-scope study and irrelevant metrics.
@@ -129,14 +122,14 @@ The per-document structure and topic descriptions help, but the context still fa
 
 The generation agent is asked to produce context-aware answers from input that is neither structured nor context-aware. Even a larger language model would struggle to reliably distinguish boreal from temperate forest studies when the context provides only an abstract snippet and a title. The failures we documented in \S\ref{sec:failure-patterns} are therefore not just about the generation model's capabilities; they are, in large part, a result of the limited context it receives.
 
-Unlike the baseline, the context passed to the generation agent is filtered against the query's semantic requirements rather than assembled by similarity alone.
+In our approach, by contrast, the context passed to the generation agent is filtered against the query's semantic requirements rather than assembled by similarity alone.
 
 %% ============================================================
 \section{Root Cause Analysis}
 \label{sec:root-causes}
 %% ============================================================
 
-The failure patterns and context limitations are not independent problems. They come from architectural gaps that compound across pipeline stages. We have not verified each root cause in isolation, but they follow directly from the failure patterns and context limitations documented above. They directly informed our design choices.
+The failure patterns and context limitations are not independent problems. They come from architectural gaps that compound across pipeline stages. We have not verified each root cause in isolation, but they follow directly from the failure patterns and context limitations documented above and informed our design choices.
 
 \paragraph{Retrieval.} The baseline relies on vector similarity and lexical matching. This returns documents that are on-topic but not necessarily on-context. Standard embedding models do not capture the fine-grained dimensions domain experts apply implicitly. Two documents may appear equally relevant in embedding space while being contextually incompatible. Similarity does not imply semantic fit.
 
@@ -158,5 +151,3 @@ The root cause analysis points to three architectural gaps: no structured repres
 \paragraph{Multi-agent architecture.} \citet{liu2024lost} showed that LLMs struggle to use information in long contexts, especially material buried in the middle of the input. We split the work across three specialised agents, each with a focused task and a tailored prompt. The Ontology Agent handles semantic parsing, the Refinement Agent handles document evaluation and filtering, and the Generation Agent handles answer composition. Each boundary acts as a checkpoint: the ontology can be inspected before it guides refinement, and the refined context is an explicit, verifiable input to generation. Agents can also be improved or replaced independently without touching the rest of the pipeline~\citep{pan2023multiagent, zhao2025marag}.
 
 \paragraph{Extension over replacement.} The problems do not lie in the retrieval mechanism itself. The knowledge graph is a valuable asset containing curated EO publications, and the two-step generation pattern is well-motivated. What is missing is semantic guidance around retrieval and generation. We therefore extend the existing baseline pipeline rather than replacing it. The knowledge graph, ArangoDB Query Language (AQL) retrieval, and two-step architecture remain unchanged.
-
-This next chapter presents the full pipeline design.

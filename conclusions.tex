@@ -4,9 +4,7 @@
 \section{Research Question Answers}
 \label{sec:rq-answers}
 
-This section answers each research question based on the results from Chapter~\ref{chap:results} and the discussion in Chapter~\ref{chap:discussion}.
-
-\paragraph{Main RQ: Can a multi-agent architecture with dynamic ontology generation reduce hallucinations and improve contextual alignment in domain-specific RAG systems for Earth observation queries?}
+\paragraph{Main RQ: Can a multi-agent architecture with dynamic ontology generation reduce hallucinations and improve answer quality in domain-specific RAG systems for Earth observation queries?}
 
 Yes. The ontology-enhanced pipeline scores 7.48/10 overall, significantly outperforming the no-ontology variant (6.88), the zero-shot baseline (6.28), and the two-step baseline (5.51). All pairwise differences are significant at $p < 0.001$ with large effect sizes ($r > 0.77$). Scientific accuracy improves by +0.64 over no-ontology and +1.17 over the two-step baseline, indicating reduced hallucination. Scope awareness improves by +0.56 over no-ontology and +3.09 over the two-step baseline, indicating better contextual alignment. The improvement is not absolute: quantitative precision remains a weakness at 5.93/10, and on about 20\% of questions the ontology adds marginal or no benefit.
 

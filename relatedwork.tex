@@ -1,7 +1,7 @@
 \chapter{Background and Related Work}
 \label{chap:background}
 
-This chapter is divided into two parts. The first (Sections~\ref{sec:rag-fundamentals}--\ref{sec:background-agents}) introduces the conceptual and technical foundations of our approach. The second (Sections~\ref{sec:rw-rag-architectures}--\ref{sec:rw-llm-judge}) reviews related work and identifies the gap we address.
+Sections~\ref{sec:rag-fundamentals}--\ref{sec:background-agents} introduce the conceptual and technical foundations of our approach; Sections~\ref{sec:rw-rag-architectures}--\ref{sec:rw-llm-judge} review related work and identify the gap we address.
 
 %% ============================================================
 %% PART I: BACKGROUND
@@ -10,7 +10,7 @@ This chapter is divided into two parts. The first (Sections~\ref{sec:rag-fundame
 \section{Retrieval-Augmented Generation}
 \label{sec:rag-fundamentals}
 
-The most direct way to deal with hallucinations from Large Language Models (LLMs) is to ground their outputs in verified external evidence at generation. That is the core idea behind Retrieval-Augmented Generation (RAG). \citet{lewis2020retrieval} showed that a retrieval step added to a generative model makes answers more factual and traceable to sources, outperforming models that rely on parameters alone. Rather than depending on the LLM's training knowledge, a RAG system retrieves relevant documents and assembles them into a \emph{context} that conditions the final answer. This makes it well suited to domains where factual correctness can be checked against explicit evidence.
+The most direct way to deal with hallucinations from Large Language Models (LLMs) is to ground their outputs in verified external evidence at generation. Retrieval-Augmented Generation (RAG) is built on this principle. \citet{lewis2020retrieval} showed that a retrieval step added to a generative model makes answers more factual and traceable to sources, outperforming models that rely on parameters alone. Rather than depending on the LLM's training knowledge, a RAG system retrieves relevant documents and assembles them into a \emph{context} that conditions the final answer. This makes it well suited to domains where factual correctness can be checked against explicit evidence.
 
 A standard RAG pipeline runs in four steps. The query is first encoded as a vector embedding. The most relevant documents are then selected from the corpus using dense similarity search, lexical matching, or a combination of both, typically organised as a knowledge graph or vector database. The retrieved set is filtered, ranked, and refined. Finally, the generation model produces an answer conditioned on both the query and the refined context.
 
@@ -34,14 +34,12 @@ The interaction between terminology, measurement conventions, and spatial or tem
 \subsection{Semantic Dimensions}
 \label{subsec:eo-dimensions}
 
-In Earth observation, the semantic dimensions that make up whether a piece of evidence applies to a given question are \emph{what} is being measured, \emph{how} it is measured, \emph{where} it is measured, \emph{when} it is measured, and \emph{why} it is being measured. Searching for information on lexical similarity alone misses distinctions that are critical from a scientific standpoint.
+In Earth observation, whether a piece of evidence applies to a given question depends on five semantic dimensions: \emph{what} is measured, \emph{how}, \emph{where}, \emph{when}, and \emph{why}. Searching for information on lexical similarity alone misses distinctions that are critical from a scientific standpoint.
 
 Consider a user asking about biomass estimation in a given forest biome. The system must differentiate between sensor-related attributes and the spatial context (the specific biome), and also recognise whether the available estimates actually apply to that biome. Structuring a query along these dimensions is essentially a lightweight form of semantic parsing~\citep{berant2013semantic}: it makes the question's meaning explicit enough to match against retrieved documents and information.
 
 \section{Semantic Structuring and Multi-Agent Coordination}
 \label{sec:background-agents}
-
-The previous sections showed that vector similarity alone does not capture the structural semantics of a query, and that long retrieved contexts can degrade generation quality. This section introduces two ideas that help address these issues.
 
 \subsection{Semantic Parsing}
 
@@ -52,7 +50,7 @@ The previous sections showed that vector similarity alone does not capture the s
 \textbf{Multi-agent systems} divide a complex task into specialised components, each handling a narrower responsibility. In the LLM context, this can improve transparency because each agent can be inspected separately and apply a different prompt or objective~\citep{pan2023multiagent}. Chapter~\ref{chap:approach} further describes how we combine these two ideas into our pipeline.
 
 \bigskip
-\noindent Semantic structuring and multi-agent coordination each target a different limitation of standard RAG: the first makes the meaning of a query explicit, the second splits retrieval, filtering, and generation into steps that can be checked independently. Sections~\ref{sec:rw-rag-architectures}--\ref{sec:rw-multi-agent} review how prior work has approached each of these dimensions.
+\noindent Semantic structuring and multi-agent coordination each target a different limitation of standard RAG: the first makes the meaning of a query explicit, the second splits retrieval, filtering, and generation into steps that can be checked independently.
 
 %% ============================================================
 %% PART II: RELATED WORK
@@ -65,7 +63,7 @@ Since~\citet{lewis2020retrieval} showed the benefits of combining retrieval with
 
 Iterative and multi-hop RAG approaches address the fact that many questions cannot be answered in a single retrieval step. Chain-of-thought augmented retrieval and multi-step pipelines have shown that question decomposition improves performance on multi-document reasoning tasks~\citep{trivedi2023ircot}. However, retrieval in these systems is still surface-similarity driven, with no explicit mechanism to ensure the retrieved documents cover the semantic structure of the query.
 
-\paragraph{The two-step baseline.} The EO RAG model developed by~\citet{elbaff2025earthobservationrag} retrieves documents from an Earth observation knowledge graph and passes them through a second generation step. This strategy improves groundability and answer quality on EO questions, particularly with open-source models. It is the starting point and primary baseline for our work. However, it performs no query-specific semantic structuring: retrieval and generation both operate without an explicit representation of what the query is actually asking. That gap is the central motivation for what we propose.
+\paragraph{The two-step baseline.} The EO RAG model developed by~\citet{elbaff2025earthobservationrag} retrieves documents from an Earth observation knowledge graph and passes them through a second generation step. This strategy improves groundability and answer quality on EO questions, particularly with open-source models. It is the starting point and primary baseline for our work, but it performs no query-specific semantic structuring: retrieval and generation both operate without an explicit representation of what the query is actually asking. That gap is the central motivation for what we propose.
 
 \section{Ontologies and Graph-Grounded Retrieval}
 \label{sec:rw-ontologies}
@@ -76,12 +74,12 @@ Recent work has explored grounding RAG systems in domain ontologies to improve f
 
 Graph-based RAG pushes this further by building knowledge graphs from large corpora and using their structural properties. \citet{edge2024graphrag} introduced GraphRAG, which constructs an entity-level graph and community structure over a corpus and uses community summaries for global sensemaking and multi-hop question answering. Their approach showed large improvements in both comprehensiveness and diversity of generated answers. More recent variants, such as dynamic or query-directed GraphRAG approaches, construct local graphs guided by the user's query at retrieval time. Frameworks such as DO-RAG~\citep{opoku2025dorag} organise domain documents into multilevel knowledge graphs and use both graph traversal and vector search for retrieval, prioritising structural semantics over raw similarity scores.
 
-All of these systems confirm that adding structure on top of RAG improves factual recall and reduces hallucination in specialised domains. Their limitation is the assumption of a \emph{static} ontology or a static corpus-level graph, with relevant portions selected at query time rather than generated for it. No prior work generates a compact, \emph{query-specific} ontology structured around independent semantic dimensions and uses that ontology as the primary means to control contextual relevance, preserve quantitative detail, and structure generation. A natural extension is query-adaptive ontology generation, where the ontology is constructed on the fly from the question itself rather than drawn from a pre-existing schema. Like prior work, we use ontological structure to guide retrieval, but instead of a fixed schema we generate a compact, query-specific ontology for each question.
+All of these systems confirm that adding structure on top of RAG improves factual recall and reduces hallucination in specialised domains. Their limitation is the assumption of a \emph{static} ontology or a static corpus-level graph, with relevant portions selected at query time rather than generated for it. To our knowledge, no prior work generates a compact, \emph{query-specific} ontology structured around independent semantic dimensions and uses that ontology as the primary means to control contextual relevance, preserve quantitative detail, and structure generation. Like prior work, we use ontological structure to guide retrieval, but instead of a fixed schema we generate a compact, query-specific ontology for each question.
 
 \section{Multi-Agent LLM Systems}
 \label{sec:rw-multi-agent}
 
-When a task requires retrieval, semantic interpretation, and generation in sequence, expecting a single model to do all three reliably is unrealistic, especially for smaller open-source models. \citet{pan2023multiagent} argued that distributing a task across specialised LLM agents improves both reasoning quality and coordination between steps. \citet{zhao2025marag} extended this to RAG settings, showing that multi-agent orchestration improves both reasoning quality and factual consistency on knowledge-intensive tasks.
+When a task requires retrieval, semantic interpretation, and generation in sequence, expecting a single model to do all three reliably is unrealistic, especially for smaller open-source models. \citet{pan2023multiagent} argued that distributing a task across specialised LLM agents improves both reasoning quality and coordination between steps. \citet{zhao2025marag} extended this to RAG settings, showing that multi-agent orchestration improves factual consistency on knowledge-intensive tasks.
 
 The multi-agent design here is not about autonomous reasoning but about enforcing semantic checkpoints at each stage. Our agents follow a fixed sequence: the ontology agent extracts the query-specific semantic structure, the refinement agent evaluates retrieved passages against that ontology, and the generation agent produces the final answer in a controlled format. The ontology agent's output works as a checklist of required conditions that the refinement agent enforces.
 
@@ -94,11 +92,11 @@ Correct answers to open-ended scientific questions can take many valid forms, an
 
 \citet{zheng2023judging} introduced MT-Bench and Chatbot Arena to systematically study LLM-based evaluation. Strong judges such as GPT-4 match human preferences at over 80\% agreement, comparable to inter-annotator agreement, making the approach a scalable alternative to human evaluation. The method does, however, carry known weaknesses: \emph{position bias} (judges prefer the answer presented first), \emph{verbosity bias} (longer answers are rated higher regardless of quality), \emph{self-enhancement bias} (models favour their own outputs), and \emph{limited reasoning ability} on mathematical or logical tasks.
 
-These biases directly shaped our evaluation design. To address these, we use single-answer grading rather than pairwise comparison (avoiding position bias), include a directness criterion that penalises length without informational content, and choose a judge model (Claude Sonnet~4.6) distinct from the generation model (Mistral Small) to avoid self-enhancement bias. An earlier configuration using GPT-4.1-mini with five criteria showed score saturation and limited discriminative power. The final framework uses a larger model, with eight criteria on a 1--10 scale, allowing more meaningful distinctions between pipeline variants.
+To address these, we use single-answer grading rather than pairwise comparison (avoiding position bias), include a directness criterion that penalises length without informational content, and choose a judge model (Claude Sonnet~4.6) distinct from the generation model (Mistral Small) to avoid self-enhancement bias. An earlier configuration using GPT-4.1-mini with five criteria showed score saturation and limited discriminative power. The final framework uses a larger model, with eight criteria on a 1--10 scale, allowing more meaningful distinctions between pipeline variants.
 
 Rather than adapting generic evaluation criteria, we design criteria specific to scientific question answering, including quantitative precision and scope awareness, and refine the configuration iteratively based on observed scoring biases.
 
 \section{Research Gap}
 \label{sec:rw-gap}
 
-No prior work combines the elements reviewed in this chapter in the way we propose: generating a compact, \emph{query-specific} ontology over distinct semantic dimensions, using it as a filter and alignment mechanism across a \emph{multi-agent} pipeline, and validating it through an evaluation framework tailored to the precision and scope requirements of scientific question answering.
+To our knowledge, no prior work combines the elements reviewed in this chapter in the way we propose: generating a compact, \emph{query-specific} ontology over distinct semantic dimensions, using it as a filter and alignment mechanism across a \emph{multi-agent} pipeline, and validating it through an evaluation framework tailored to the precision and scope requirements of scientific question answering.
