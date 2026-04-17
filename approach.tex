@@ -197,16 +197,16 @@ Table~\ref{tab:ontology-example} shows the ontology generated for the boreal bio
 \midrule
 1 & Biophysical variable & biophysical\_variable & above\_ground\_biomass & 1.0 \\
 2 & Sensor/Method & sensor\_method & Sentinel-1\_C-band\_SAR & 0.9 \\
-3 & Spatial qualifier & spatial\_qualifier & boreal\_forest & 0.9 \\
+3 & Spatial scope & spatial\_qualifier & boreal\_forest & 0.9 \\
 4 & Biophysical variable & accuracy\_limitation & C-band\_saturation & 0.9 \\
 5 & Application domain & application\_domain & biomass\_estimation & 0.7 \\
 6 & Sensor/Method & estimation\_approach & SAR\_backscatter\_regression & 0.7 \\
-7 & Temporal qualifier & temporal\_qualifier & multi-temporal\_analysis & 0.5 \\
+7 & Temporal scope & temporal\_qualifier & multi-temporal\_analysis & 0.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The target variable (AGB, 1.0), the specific sensor (Sentinel-1 C-band, 0.9), the geographic constraint (boreal forest, 0.9), and the key accuracy concern (C-band saturation, 0.9) all receive high centrality. The temporal qualifier receives 0.5 because the question does not stress any specific time period.
+The target variable (AGB, 1.0), the specific sensor (Sentinel-1 C-band, 0.9), the geographic constraint (boreal forest, 0.9), and the key accuracy concern (C-band saturation, 0.9) all receive high centrality. The temporal scope receives 0.5 because the question does not stress any specific time period.
 
 %% ============================================================
 \section{Refinement Agent}
@@ -226,7 +226,7 @@ In a single LLM call, the agent performs two operations: (1) \emph{selective fil
 \subsubsection{Partial Relevance}
 \label{subsubsec:partial-relevance}
 
-In Earth observation, documents are almost never fully relevant or fully irrelevant. A study of SAR biomass in temperate forests is highly relevant for the sensor and variable dimensions but irrelevant for the spatial qualifier \texttt{boreal\_forest}. Instead of a binary accept/reject filter, the agent evaluates each document along the dimensions defined by the ontology. A document that partially matches is included with an explicit geographic caveat; a document that matches no high-centrality attribute is simply left out of all topics. This is especially important in EO because the literature for any given variable-sensor-region combination is sparse. Excluding all partial matches would often leave the context empty.
+In Earth observation, documents are almost never fully relevant or fully irrelevant. A study of SAR biomass in temperate forests is highly relevant for the sensor and variable dimensions but irrelevant for the spatial scope \texttt{boreal\_forest}. Instead of a binary accept/reject filter, the agent evaluates each document along the dimensions defined by the ontology. A document that partially matches is included with an explicit geographic caveat; a document that matches no high-centrality attribute is simply left out of all topics. This is especially important in EO because the literature for any given variable-sensor-region combination is sparse. Excluding all partial matches would often leave the context empty.
 
 \subsubsection{Centrality-Weighted Selection}
 \label{subsubsec:centrality-matching}
@@ -430,7 +430,7 @@ A single query uses four LLM calls: one for ontology construction, one for conte
 \label{sec:hypothesis}
 %% ============================================================
 
-Based on the failure analysis in Chapter~\ref{chap:preliminaries} and the literature on LLM context utilisation, we expect the largest gains on \textbf{directness} and \textbf{scope awareness}. The prompt improvements target these two criteria most directly: directness through the opening-answer mandate, and scope awareness through the ontology's spatial and temporal qualifiers combined with the Refinement Agent's scope-tagging. As reported in Chapter~\ref{chap:results}, the baseline's retrieval step actively hurts directness (dropping from 6.67 zero-shot to 4.59 with context), suggesting that structured guidance is needed for retrieval to improve directness rather than degrade it.
+Based on the failure analysis in Chapter~\ref{chap:preliminaries} and the literature on LLM context utilisation, we expect the largest gains on \textbf{directness} and \textbf{scope awareness}. The prompt improvements target these two criteria most directly: directness through the opening-answer mandate, and scope awareness through the ontology's spatial and temporal scope attributes combined with the Refinement Agent's scope-tagging. As reported in Chapter~\ref{chap:results}, the baseline's retrieval step actively hurts directness (dropping from 6.67 zero-shot to 4.59 with context), suggesting that structured guidance is needed for retrieval to improve directness rather than degrade it.
 
 We also expect gains on response structure and scientific accuracy. Quantitative precision should improve but will likely remain the hardest criterion, since it depends on whether the source abstracts actually contain specific numbers. We return to this in the results discussion.
 
