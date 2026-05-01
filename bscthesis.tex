@@ -23,6 +23,7 @@
 \usepackage{multirow}             % Multi-row cells in tables
 \usepackage{tikz}                 % PGF/TikZ diagrams
 \usepackage{longtable}            % Tables that span multiple pages (used in appendix)
+\usepackage{placeins}             % \FloatBarrier to keep figures within their section
 
 % --- listings configuration (Python) ---
 \definecolor{codebg}{RGB}{248,248,248}
@@ -100,6 +101,7 @@ colour,
 \input{discussion}       % Chapter 7: Discussion
 \input{conclusions}      % Chapter 8: Conclusion and Future Work
 
+\addcontentsline{toc}{chapter}{Bibliography}
 \bibliographystyle{plainnat}
 \bibliography{bibliography}
 
