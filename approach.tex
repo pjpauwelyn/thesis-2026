@@ -47,7 +47,7 @@ Figure~\ref{fig:pipeline} shows the end-to-end architecture. A query passes thro
 \item \textbf{Output.} The final answer with inline citations and a references section.
 \end{enumerate}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{pipeline_diagram}
 \caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Grey boxes represent existing two-step baseline components; coloured boxes represent the three new agents.}
@@ -62,7 +62,7 @@ Figure~\ref{fig:pipeline} shows the end-to-end architecture. A query passes thro
 \subsection{Role and Input/Output}
 \label{subsec:ontology-role}
 
-The Ontology Agent is the first agent in the pipeline and the only one that works entirely independently of the knowledge graph. In a single LLM call, it takes the user's question and returns a \texttt{DynamicOntology} (schema in Appendix~\ref{app:schema-ontology}): a structured set of typed attribute-value pairs representing the question's semantic requirements. The Refinement and Generation Agents use it for document selection, filtering, and scope-aware generation.
+The Ontology Agent is the first agent in the pipeline and the only one that works entirely independently of the knowledge graph. In a single LLM call, it takes the user's question and returns a \texttt{DynamicOntology} --- a query-specific structured representation that is generated fresh for each query and remains fixed for the duration of that run (schema in Appendix~\ref{app:schema-ontology}): a structured set of typed attribute-value pairs representing the question's semantic requirements. The Refinement and Generation Agents use it for document selection, filtering, and scope-aware generation.
 
 The ontology does not capture every aspect of the question. It captures the dimensions along which evidence is either applicable or not. For the question \textit{``How can above-ground biomass in boreal forests be estimated using Sentinel-1 C-band SAR, and what are the main accuracy limitations?''}, the relevant dimensions are the biophysical variable (AGB), the sensor (C-band SAR), the geographic context (boreal forest), and the accuracy concern (C-band saturation).
 
@@ -226,7 +226,7 @@ In a single LLM call, the agent performs two operations: (1) \emph{selective fil
 \subsubsection{Partial Relevance}
 \label{subsubsec:partial-relevance}
 
-In Earth observation, documents are almost never fully relevant or fully irrelevant. A study of SAR biomass in temperate forests is highly relevant for the sensor and variable dimensions but irrelevant for the spatial scope \texttt{boreal\_forest}. Instead of a binary accept/reject filter, the agent evaluates each document along the dimensions defined by the ontology. A document that partially matches is included with an explicit geographic caveat; a document that matches no high-centrality attribute is simply left out of all topics. This is especially important in EO because the literature for any given variable-sensor-region combination is sparse. Excluding all partial matches would often leave the context empty.
+In Earth observation, documents are almost never fully relevant or fully irrelevant. A study of SAR biomass in temperate forests is highly relevant for the sensor and variable dimensions but irrelevant for the spatial scope \texttt{boreal\_forest}. Instead of a binary accept/reject filter, the agent evaluates each document along the dimensions defined by the ontology. A document that partially matches is included with an explicit geographic caveat; a document that matches no high-centrality attribute is simply left out of all topics. This is especially important in EO because the literature for any given variable-sensor-region combination is sparse~\citep{aschbacher2020earth}. Excluding all partial matches would often leave the context empty.
 
 \subsubsection{Centrality-Weighted Selection}
 \label{subsubsec:centrality-matching}
