@@ -17,7 +17,7 @@ This gives 280~evaluations (70~questions $\times$ 4~pipelines) and 2{,}240 indiv
 \centering
 \caption{Overall pipeline ranking on the 70-question EO benchmark, evaluated
 by Claude Sonnet~4.6 (mean of eight criteria, 1--10 scale). The ontology-enhanced
-pipeline leads on all criteria; the two-step baseline finishes last.}
+pipeline leads on all criteria; the two-step baseline scores lowest overall.}
 \label{tab:overall-ranking}
 \begin{tabular}{clcl}
 \toprule
@@ -26,7 +26,7 @@ pipeline leads on all criteria; the two-step baseline finishes last.}
 1 & Ontology-Enhanced RAG & 7.48 / 10 & Best \\
 2 & No-Ontology RAG & 6.88 / 10 & Second \\
 3 & Zero-Shot & 6.28 / 10 & Third overall \\
-4 & Two-Step RAG Baseline & 5.51 / 10 & Lowest overall \\
+4 & Two-Step RAG Baseline & 5.51 / 10 & Scores lowest overall \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -40,13 +40,14 @@ pipeline leads on all criteria; the two-step baseline finishes last.}
 
 Table~\ref{tab:overall-ranking} shows the full ranking. The gaps between consecutive pipelines are roughly even: +0.60 from no-ontology to ontology, +0.60 from zero-shot to no-ontology, and +0.77 from the two-step baseline to zero-shot.
 
-A notable result is that the two-step baseline (5.51) scores below the zero-shot baseline (6.28). The context and generation-agent prompts in the two-step baseline degrade the final answers. This is not driven by a few outliers: the two-step baseline underperforms zero-shot on 66 of 70~questions. Per criterion, directness drops by 2.09 points, response structure by 1.40, relevance by 0.96, and scope awareness by 0.80. The only criterion where the two-step baseline slightly beats zero-shot is quantitative precision (+0.06), which is negligible. These drops map directly onto the four shortcomings from Chapter~\ref{chap:preliminaries}: delayed direct answers, poor structure, relevance drift from context padding, and uncaveated claims.
+A notable result is that the two-step baseline (5.51) scores below the zero-shot baseline (6.28). The context and generation-agent prompts in the two-step baseline degrade the final answers. This is not driven by a few outliers: the two-step baseline trails the zero-shot model on 66 of 70~questions. Per criterion, directness drops by 2.09 points, response structure by 1.40, relevance by 0.96, and scope awareness by 0.80. The only criterion where the two-step baseline slightly beats zero-shot is quantitative precision (+0.06), which is negligible. These drops map directly onto the four shortcomings from Chapter~\ref{chap:preliminaries}: delayed direct answers, poor structure, relevance drift from context padding, and uncaveated claims.
 
 Their overall scores are close (6.28 vs 6.88), and on several criteria the differences are small: relevance (7.57 vs 7.56), completeness (6.91 vs 6.86), and scientific accuracy (7.00 vs 7.19). The improved refinement and generation prompts alone, without the ontology, bring performance back to roughly the zero-shot level on core quality metrics. The bigger differences appear on scope awareness (5.34 vs 7.07) and helpfulness (5.41 vs 6.56), where the restructured pipeline already helps. The ontology-enhanced variant pulls clearly ahead on all eight criteria, so ontology-guided semantic reasoning adds a consistent edge that prompt improvements alone do not reach.
 
 The heatmap in Figure~\ref{fig:heatmap-overview} shows the same pattern visually. The gap between the ontology-enhanced and no-ontology variants is smaller than the gap between the two-step baseline and zero-shot. The three-agent architecture with structured refinement accounts for the larger share of the improvement; the ontology adds a further consistent increment on top.
 
 % =============================================================================
+\FloatBarrier
 \section{Per-Criterion Analysis}
 \label{sec:per-criterion}
 % =============================================================================
@@ -81,9 +82,10 @@ Table~\ref{tab:per-criterion-means} breaks down the scores by criterion. We grou
 
 \paragraph{Core quality criteria.} Scientific accuracy, relevance, and completeness represent general answer quality. The ontology-enhanced pipeline leads on all three: scientific accuracy at 7.83, relevance at 7.96 (the highest single score of any criterion for any pipeline), and completeness at 7.46. An interesting pattern is that zero-shot relevance (7.57) is nearly identical to no-ontology relevance (7.56). Retrieval on its own does not improve relevance; the ontology's semantic alignment is what pushes it to 7.96 (+0.40). On completeness, the ontology ensures that each semantic dimension (sensors, variables, scope) is addressed, raising the score from 6.86 to 7.46.
 
-\paragraph{Helpfulness.} The ontology-enhanced pipeline scores 7.41 on helpfulness, compared to 6.56 for no-ontology (+0.86, the largest ontology gain). Helpfulness correlates strongly with quantitative precision ($r = 0.80$), so the ontology's ability to surface specific numbers and datasets is what drives perceived usefulness. The two-step baseline (5.13) is only slightly below zero-shot (5.41) on helpfulness despite being worse overall. The judge may still reward the extra context, even when it is poorly structured.
+\paragraph{Helpfulness.} The ontology-enhanced pipeline scores 7.41 on helpfulness, compared to 6.56 for no-ontology (+0.86, the largest ontology gain). Helpfulness correlates strongly with quantitative precision ($r = 0.80$), so the ontology's ability to surface specific numbers and datasets is what drives perceived usefulness. The two-step baseline (5.13) is only slightly below zero-shot (5.41) on helpfulness despite scoring lower overall. The judge may still reward the extra context, even when it is poorly structured.
 
 % =============================================================================
+\FloatBarrier
 \section{Score Distributions and Win Rates}
 \label{sec:distributions}
 % =============================================================================
@@ -99,9 +101,10 @@ pipeline (orange bars) exceeds the baseline pipeline (blue bars) over the full q
 
 The ontology-enhanced pipeline wins on 56 of 70~questions (80\%) against the no-ontology variant. The average winning margin is about 0.60 points, with individual margins from under 0.25 (near-ties) to over 1.50 (clear ontology dominance). The largest gains appear on multi-part comparison questions, where the ontology's structured dimensions help the generation agent organise parallel comparisons, and on questions that require explicit spatial or temporal scoping, where the scope attributes translate directly into caveats. The 14~questions where the no-ontology variant ties or wins tend to be simpler factual questions, where the ontology adds context overhead with little informational benefit.
 
-On the other end, the two-step baseline loses to zero-shot on 66 of 70~questions (94\%). As Figure~\ref{fig:per-question} shows, the two-step baseline bars sit consistently below the zero-shot bars, with only 4~questions where the two-step baseline marginally exceeds zero-shot (all by less than 0.5 points). The degradation from the two-step refinement is systematic, not driven by a few bad cases.
+On the other end, the two-step baseline trails the zero-shot model on 66 of 70~questions (94\%). As Figure~\ref{fig:per-question} shows, the two-step baseline bars sit consistently below the zero-shot bars, with only 4~questions where the two-step baseline marginally exceeds zero-shot (all by less than 0.5 points). The degradation from the two-step refinement is systematic, not driven by a few bad cases.
 
 % =============================================================================
+\FloatBarrier
 \section{Statistical Significance and Effect Sizes}
 \label{sec:statistical}
 % =============================================================================
@@ -168,13 +171,14 @@ All six pairwise comparisons between pipelines are significant at $p < 0.001$ us
 Table~\ref{tab:ont-vs-noont-criteria} focuses on the ontology vs no-ontology comparison per criterion. All eight criteria show significant ontology gains. Response structure shows the smallest gain, since the no-ontology pipeline already benefits from the structured refinement output format.
 
 % =============================================================================
+\FloatBarrier
 \section{Quantitative Precision: A Universal Weakness}
 \label{sec:quant-precision}
 % =============================================================================
 
 Quantitative precision is the lowest-scoring criterion for every pipeline: zero-shot scores 4.01, the two-step baseline 4.07, no-ontology 5.33, and the ontology-enhanced pipeline 5.93. The gap between quantitative precision and the overall score is 1.4--2.3 points for every pipeline, a consistent underperformance relative to other criteria. The ontology does improve quantitative precision significantly (+0.60 over no-ontology, $p < 0.001$; +1.92 over zero-shot), but even the best pipeline stays below the 6-point mark.
 
-The main cause is that the knowledge graph currently contains only document abstracts. Abstracts summarise findings in general terms and rarely include exact numbers, specific measurements, or detailed statistics. The full-text sections where those values appear (results tables, figure captions, and method descriptions) are not available to the pipeline. Even when the ontology's centrality scores tell the refinement agent that quantitative detail should exist for a given topic, the source documents do not contain the numbers to extract. Mistral Small can reproduce numerical values when they appear in the input context, but it cannot generate accurate domain-specific numbers from its training data alone. The next chapter discusses how full-text indexing or structured data extraction could address this.
+The main cause is that the knowledge graph currently contains only document abstracts. Abstracts summarise findings in general terms and rarely include exact numbers, specific measurements, or detailed statistics. The full-text sections where those values appear (results tables, figure captions, and method descriptions) are not available to the pipeline. Even when the ontology's centrality scores tell the refinement agent that quantitative detail should exist for a given topic, the source documents do not contain the numbers to extract. A small open-source model can reproduce numerical values when they appear in the input context, but cannot reliably generate accurate domain-specific numbers from parametric knowledge alone~\citep{shi2023large}. The next chapter discusses how full-text indexing or structured data extraction could address this.
 
 % =============================================================================
 \section{Manual Failure Mode Analysis}
