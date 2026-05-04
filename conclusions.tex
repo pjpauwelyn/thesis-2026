@@ -26,7 +26,7 @@ They work for detecting relative differences between pipelines when designed car
 \paragraph{Sub-RQ 4: Does ontology-based semantic grounding provide significant performance benefits for small-model RAG systems, and to what extent can such an approach generalise to other knowledge-intensive domains beyond Earth observation?}
 
 \noindent\emph{Evidence: Table~\ref{tab:ont-vs-noont-criteria} and \S\ref{sec:discuss-generalisability}.}
-Yes, the ontology provides a significant benefit: +0.60 overall ($p < 0.001$), with wins on 56 of 70~questions and significant gains on all eight criteria. The largest improvements are on helpfulness (+0.86) and directness (+0.81). The pipeline design is domain-agnostic. The ontology agent is dynamic and the semantic dimensions can be adapted to any domain with structured knowledge, as we discussed in Section~\ref{sec:discuss-generalisability}. Generalisation is structurally supported but not empirically validated. Testing in other domains would require adapted ontology dimensions and a quality retrieval source. We tested on one domain, one knowledge graph, and one model.
+Yes, the ontology provides a significant benefit: +0.60 overall ($p < 0.001$), with wins on 56 of 70~questions and significant gains on all eight criteria. The largest improvements are on helpfulness (+0.86) and directness (+0.81). The pipeline design is flexible towards different domains. The ontology agent is dynamic and the semantic dimensions can be adapted to any domain with structured knowledge, as we discussed in Section~\ref{sec:discuss-generalisability}. Generalisation is structurally supported but not empirically validated. Testing in other domains would require adapted ontology dimensions and a quality retrieval source. We tested on one domain, one knowledge graph, and one model.
 
 
 \section{Future Work}
@@ -49,4 +49,4 @@ Yes, the ontology provides a significant benefit: +0.60 overall ($p < 0.001$), w
 \chapter*{Declaration on Generative AI}
 \addcontentsline{toc}{chapter}{Declaration on Generative AI}
 
-During the preparation of this work, the author used Claude Opus 4.6 for grammar and spelling checks, and occasional prompting to refine specific phrasing or terms for clarity. No text was purely AI generated. After using this tool, the author reviewed and edited the content as needed and takes full responsibility for the thesis's content.
+During the preparation of this work, the author used Claude Opus and Sonnet 4.6 for grammar and spelling checks, and occasional prompting to refine specific phrasing or terms for clarity. No text was purely AI generated. After using this tool, the author reviewed and edited the content as needed and takes full responsibility for the thesis's content.

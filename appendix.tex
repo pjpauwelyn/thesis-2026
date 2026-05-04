@@ -415,14 +415,14 @@ ADDITIONAL CONSTRAINTS
 
 \section{Refinement Agent Prompt (No-Ontology Variant)}\label{app:prompt-refinement-no-ontology}
 
-Used by the Refinement Agent in the no-ontology ablation variant (Section~\ref{subsec:refinement-prompt-design}).
+Used by the Refinement Agent in the no-ontology variant (Section~\ref{subsec:refinement-prompt-design}).
 The \texttt{ONTOLOGY} input block is removed and the document selection criterion changes from
 ``prefer items that mention key ONTOLOGY attributes'' to ``prefer items directly relevant to
 the user question.'' The \texttt{RE-SCAN FOCUS} line no longer includes the ontology anchor.
-The output format is otherwise identical, enabling a clean ablation.
+The output format is otherwise identical, enabling a clean comparison.
 
 \begin{lstlisting}[style=promptstyle,
-caption={Refinement Agent prompt -- no-ontology ablation variant (full).},
+caption={Refinement Agent prompt -- no-ontology version variant (full).},
 label={lst:refinement-prompt-no-ontology}]
 You are a research context refinement assistant.
 

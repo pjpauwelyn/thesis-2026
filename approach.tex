@@ -50,7 +50,7 @@ Figure~\ref{fig:pipeline} shows the end-to-end architecture. A query passes thro
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{pipeline_diagram}
-\caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Grey boxes represent existing two-step baseline components; coloured boxes represent the three new agents.}
+\caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Grey boxes represent existing two-step baseline components; dark blue boxes represent the three new agents.}
 \label{fig:pipeline}
 \end{figure}
 
@@ -182,31 +182,6 @@ Several design decisions shape the prompt:
 
 The complete prompt is provided in Listing~\ref{lst:ontology-prompt} (Appendix~\ref{app:prompt-ontology}).
 
-\subsection{Example}
-\label{subsec:ontology-example}
-
-Table~\ref{tab:ontology-example} shows the ontology generated for the boreal biomass question from Chapter~\ref{chap:preliminaries}.
-
-\begin{table}[htbp]
-\centering
-\caption{Example ontology for: ``How can above-ground biomass in boreal forests be estimated using Sentinel-1 C-band SAR data, and what are the main accuracy limitations?''}
-\label{tab:ontology-example}
-\begin{tabular}{clllc}
-\toprule
-\# & Category & Attribute & Value & Centrality \\
-\midrule
-1 & Biophysical variable & biophysical\_variable & above\_ground\_biomass & 1.0 \\
-2 & Sensor/Method & sensor\_method & Sentinel-1\_C-band\_SAR & 0.9 \\
-3 & Spatial scope & spatial\_qualifier & boreal\_forest & 0.9 \\
-4 & Biophysical variable & accuracy\_limitation & C-band\_saturation & 0.9 \\
-5 & Application domain & application\_domain & biomass\_estimation & 0.7 \\
-6 & Sensor/Method & estimation\_approach & SAR\_backscatter\_regression & 0.7 \\
-7 & Temporal scope & temporal\_qualifier & multi-temporal\_analysis & 0.5 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The target variable (AGB, 1.0), the specific sensor (Sentinel-1 C-band, 0.9), the geographic constraint (boreal forest, 0.9), and the key accuracy concern (C-band saturation, 0.9) all receive high centrality. The temporal scope receives 0.5 because the question does not stress any specific time period.
 
 %% ============================================================
 \section{Refinement Agent}
@@ -313,7 +288,7 @@ Several design decisions shape the prompt:
 \item \textbf{Scope tags on numbers.} Every quantitative result must state its geographic and temporal scope, targeting the context-misalignment failure from Section~\ref{subsec:context-misalignment-example}.
 \item \textbf{No invented content.} The prompt prohibits making up numbers, regions, or citations. Missing evidence must be flagged rather than filled in~\citep{bechard2024reducing}.
 \item \textbf{Re-scan at prompt end.} Re-stating the query and ontology at the very end keeps the selection criteria fresh when the model starts generating~\citep{liu2024lost}.
-\item \textbf{No-ontology variant.} For the ablation, the ontology input is replaced with a note that none is provided and the selection criterion changes to ``prefer items directly relevant to the user question.'' Everything else stays identical, so any difference is attributable to the ontology.
+\item \textbf{No-ontology variant.} For comparison, the ontology input is replaced with a note that none is provided and the selection criterion changes to ``prefer items directly relevant to the user question.'' Everything else stays identical, so any difference is attributable to the ontology.
 \end{itemize}
 
 The complete prompts for both the ontology-enhanced and no-ontology variants are provided in Listings~\ref{lst:refinement-prompt} and~\ref{lst:refinement-prompt-no-ontology} (Appendix~\ref{app:prompt-refinement} and~\ref{app:prompt-refinement-no-ontology}).
@@ -433,5 +408,3 @@ A single query uses four LLM calls: one for ontology construction, one for conte
 Based on the failure analysis in Chapter~\ref{chap:preliminaries} and the literature on LLM context utilisation, we expect the largest gains on \textbf{directness} and \textbf{scope awareness}. The prompt improvements target these two criteria most directly: directness through the opening-answer mandate, and scope awareness through the ontology's spatial and temporal scope attributes combined with the Refinement Agent's scope-tagging. As reported in Chapter~\ref{chap:results}, the baseline's retrieval step actively hurts directness (dropping from 6.67 zero-shot to 4.59 with context), suggesting that structured guidance is needed for retrieval to improve directness rather than degrade it.
 
 We also expect gains on response structure and scientific accuracy. Quantitative precision should improve but will likely remain the hardest criterion, since it depends on whether the source abstracts actually contain specific numbers. We return to this in the results discussion.
-
-The no-ontology variant serves as the primary ablation: if the ontology-enhanced pipeline outperforms it, the improvement is attributable to ontology-guided semantic reasoning rather than to the general prompt improvements both variants share.
