@@ -31,13 +31,6 @@ pipeline leads on all criteria; the two-step baseline scores lowest overall.}
 \end{tabular}
 \end{table}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.85\textwidth]{chart_4pipe_heatmap.jpg}
-\caption{Heatmap of mean criterion scores across all four pipelines. The ontology-enhanced pipeline (top row) leads on every criterion; quantitative precision forms a distinct cool band across all pipelines, reflecting the abstract-only data limitation.}
-\label{fig:heatmap-overview}
-\end{figure}
-
 Table~\ref{tab:overall-ranking} shows the full ranking. The gaps between consecutive pipelines are roughly even: +0.60 from no-ontology to ontology, +0.60 from zero-shot to no-ontology, and +0.77 from the two-step baseline to zero-shot.
 
 A notable result is that the two-step baseline (5.51) scores below the zero-shot baseline (6.28). The context and generation-agent prompts in the two-step baseline degrade the final answers. This is not driven by a few outliers: the two-step baseline trails the zero-shot model on 66 of 70~questions. Per criterion, directness drops by 2.09 points, response structure by 1.40, relevance by 0.96, and scope awareness by 0.80. The only criterion where the two-step baseline slightly beats zero-shot is quantitative precision (+0.06), which is negligible. These drops map directly onto the four shortcomings from Chapter~\ref{chap:preliminaries}: delayed direct answers, poor structure, relevance drift from context padding, and uncaveated claims.
@@ -45,6 +38,13 @@ A notable result is that the two-step baseline (5.51) scores below the zero-shot
 Their overall scores are close (6.28 vs 6.88), and on several criteria the differences are small: relevance (7.57 vs 7.56), completeness (6.91 vs 6.86), and scientific accuracy (7.00 vs 7.19). The improved refinement and generation prompts alone, without the ontology, bring performance back to roughly the zero-shot level on core quality metrics. The bigger differences appear on scope awareness (5.34 vs 7.07) and helpfulness (5.41 vs 6.56), where the restructured pipeline already helps. The ontology-enhanced variant pulls clearly ahead on all eight criteria, so ontology-guided semantic reasoning adds a consistent edge that prompt improvements alone do not reach.
 
 The heatmap in Figure~\ref{fig:heatmap-overview} shows the same pattern visually. The gap between the ontology-enhanced and no-ontology variants is smaller than the gap between the two-step baseline and zero-shot. The three-agent architecture with structured refinement accounts for the larger share of the improvement; the ontology adds a further consistent increment on top.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{chart_4pipe_heatmap.jpg}
+\caption{Heatmap of mean criterion scores across all four pipelines. The ontology-enhanced pipeline (top row) leads on every criterion; quantitative precision forms a distinct cool band across all pipelines, reflecting the abstract-only data limitation.}
+\label{fig:heatmap-overview}
+\end{figure}
 
 % =============================================================================
 \FloatBarrier
