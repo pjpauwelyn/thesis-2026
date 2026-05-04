@@ -38,9 +38,9 @@ We compare four pipeline configurations. All use Mistral Small 24B as the genera
 \begin{description}
 \item[Zero-shot baseline.] The question is submitted to Mistral Small without any retrieved context. It serves as a lower bound and makes retrieval degradation visible when it occurs.
 
-\item[Two-step baseline.] The pipeline described by~\citet{elbaff2025earthobservationrag}: a zero-shot draft refined using raw context from the EO knowledge graph. It uses no ontology, no intermediate document assessment, and the original DLR generation prompt.
+\item[Two-step baseline.] The pipeline described by~\citet{elbaff2025earthobservationrag}: a zero-shot draft refined using raw context from the EO knowledge graph. It uses no ontology, no intermediate document assessment, and the original baseline generation prompt.
 
-\item[No-Ontology variant.] This variant uses the same improved Refinement and Generation Agent prompts as the ontology-enhanced pipeline, but the Refinement Agent receives no ontology. It evaluates documents based on the question text alone. This ablation isolates the ontology's contribution from prompt engineering improvements.
+\item[No-Ontology variant.] This variant uses the same improved Refinement and Generation Agent prompts as the ontology-enhanced pipeline, but the Refinement Agent receives no ontology. It evaluates documents based on the question text alone. This version isolates the ontology's contribution from prompt engineering improvements.
 
 \item[Ontology-enhanced pipeline.] The full system described in Chapter~\ref{chap:approach}: ontology construction, ontology-guided refinement, and enhanced generation. This is the primary contribution variant.
 \end{description}
@@ -58,7 +58,7 @@ According to~\citet{zheng2023judging}, strong LLM judges achieve over 80\% agree
 \subsection{Initial Framework}
 \label{sec:initial-framework}
 
-Our initial evaluation used GPT-4.1-mini as the judge with five criteria on a 1--5 scale, following the setup of the two-step baseline~\citep{elbaff2025earthobservationrag}. Two problems emerged. First, score saturation: most answers clustered at 5, leaving too little room to distinguish between pipeline variants. Second, the five criteria borrowed from the baseline (Factuality, Relevance, Groundedness, Helpfulness, and Depth) do not directly measure the qualities this thesis aims to improve: directness, scope awareness, quantitative precision, and structured response organisation.
+Our initial evaluation used GPT-4.1-mini as the judge with five criteria on a 1--5 scale, following the setup of the two-step baseline~\citep{elbaff2025earthobservationrag}. Two problems emerged. First, score saturation: most answers clustered at 5 (93\% and 99\% for the baseline and ontology variants respectively). Second, the five criteria borrowed from the baseline (Factuality, Relevance, Groundedness, Helpfulness, and Depth) do not directly measure the qualities this thesis aims to improve: directness, scope awareness, quantitative precision, and structured response organisation.
 
 \subsection{Final Framework}
 \label{sec:final-framework}
