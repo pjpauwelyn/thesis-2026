@@ -1,0 +1,29 @@
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+Scientific question answering in specialised domains requires both factual precision and
+contextual awareness. Earth Observation (EO) is one such domain: queries combine
+multiple sensors, biophysical variables, and strict spatial and temporal boundaries,
+making reliable retrieval and generation particularly challenging. Open-source
+Retrieval-Augmented Generation (RAG) systems struggle here: even when relevant
+documents are retrieved, the assembled context fails to reflect the specific dimensions
+of the question, degrading the final answer.
+
+Existing knowledge-graph RAG approaches~\citep{elbaff2025earthobservationrag} address
+retrieval but leave context curation unstructured, leading to four recurring failure
+modes: delayed direct answers, missing quantitative precision, poor response structure,
+and context misalignment. This thesis proposes an ontology-based three-agent pipeline
+that addresses these shortcomings by explicitly modelling the semantic structure of each
+query. An ontology agent parses each query into a lightweight, query-specific ontology
+of attribute-value pairs across five semantic dimensions (e.g., temporal scope:
+2015--2020, sensor: Sentinel-2). A refinement agent uses this ontology to filter
+retrieved documents and synthesise a curated context. A generation agent then drafts and
+refines the final answer.
+
+Our experiments employ a small open-source LLM, Mistral Small 24B, across four pipeline
+variants evaluated against 70 EO questions~\citep{elbaff2025earthobservationrag} using
+an LLM-as-a-judge framework with Claude Sonnet~4.6~\citep{anthropic2024claude} as
+judge. The ontology-enhanced pipeline achieved an overall score of 7.48, ahead of the
+baseline (5.51) and a no-ontology variant (6.88). All pairwise comparisons were
+significant ($p < 0.001$, $r \geq 0.77$). The architecture generalises to any
+knowledge-intensive domain where queries span multiple semantic dimensions.
