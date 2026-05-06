@@ -1,8 +1,29 @@
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
 
-Retrieval-Augmented Generation (RAG) is among the most effective ways to tie language models to scientific evidence. Even so, many open-source RAG implementations still tend to hallucinate and drift out-of-context in specialised domains. Earth Observation (EO) is one such domain: queries typically combine multiple sensors, biophysical variables, and strict spatial and temporal boundaries. Even when the correct documents are retrieved, the generated context often fails to reflect the specific aspects of the question, degrading the final answer.
+Scientific question answering in specialised domains requires both factual precision and
+contextual awareness. Earth Observation (EO) is one such domain: queries combine
+multiple sensors, biophysical variables, and strict spatial and temporal boundaries,
+making reliable retrieval and generation particularly challenging. Open-source
+Retrieval-Augmented Generation (RAG) systems struggle here: even when relevant
+documents are retrieved, the assembled context fails to reflect the specific dimensions
+of the question, degrading the final answer.
 
-To address these issues, we propose an ontology-based three-agent pipeline that extends an existing knowledge-graph RAG framework developed by the German Aerospace Center (DLR). An ontology agent parses each query into a lightweight, query-specific ontology of attribute-value pairs across the key semantic dimensions of the question. A refinement agent uses this ontology to filter retrieved documents and synthesise a curated context. A generation agent then drafts and refines the final answer. All agents run on the same small open-source model (Mistral Small 24B) as the baseline.
+Existing knowledge-graph RAG approaches~\citep{elbaff2025earthobservationrag} address
+retrieval but leave context curation unstructured, leading to four recurring failure
+modes: delayed direct answers, missing quantitative precision, poor response structure,
+and context misalignment. This thesis proposes an ontology-based three-agent pipeline
+that addresses these shortcomings by explicitly modelling the semantic structure of each
+query. An ontology agent parses each query into a lightweight, query-specific ontology
+of attribute-value pairs across five semantic dimensions (e.g., temporal scope:
+2015--2020, sensor: Sentinel-2). A refinement agent uses this ontology to filter
+retrieved documents and synthesise a curated context. A generation agent then drafts and
+refines the final answer.
 
-We evaluated four pipeline variants against 70 EO questions: the two-step baseline, a zero-shot model, a no-ontology variant of our pipeline, and the full ontology-enhanced pipeline. Answers were individually rated by Claude Sonnet 4.6 on a 1--10 scale across eight criteria: scientific accuracy, relevance, completeness, directness, quantitative precision, response structure, scope awareness, and helpfulness. Our ontology-enhanced pipeline achieved an overall score of 7.48, ahead of the no-ontology variant (6.88), the zero-shot model (6.28), and the two-step baseline (5.51). It ranked first in all eight categories, with the largest gains over the no-ontology variant in helpfulness (+0.86), directness (+0.81), and scientific accuracy (+0.64). All pairwise comparisons were significant at $p<0.001$ with effect sizes greater than $r=0.77$. Quantitative precision remained the weakest criterion (5.93), largely because we only used document abstracts, which rarely contain exact numbers. The architecture can be applied to other fields and systems wherever queries can be described across multiple dimensions.
+Our experiments employ a small open-source LLM, Mistral Small 24B, across four pipeline
+variants evaluated against 70 EO questions~\citep{elbaff2025earthobservationrag} using
+an LLM-as-a-judge framework with Claude Sonnet~4.6~\citep{anthropic2024claude} as
+judge. The ontology-enhanced pipeline achieved an overall score of 7.48, ahead of the
+baseline (5.51) and a no-ontology variant (6.88). All pairwise comparisons were
+significant ($p < 0.001$, $r \geq 0.77$). The architecture generalises to any
+knowledge-intensive domain where queries span multiple semantic dimensions.
