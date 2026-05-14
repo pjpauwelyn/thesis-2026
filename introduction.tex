@@ -1,3 +1,26 @@
+\begin{comment}
+- in 1.1 we don't need too much detail about the el baf model yet, instead of saying it has KG, we can just say iot employs open-weight LLMs
+- in 1.1 we also can't mention ontology without having defined it, we need to add a small sentence/paragraph explaining briefly what an ontology is and the reasoning behind its usage for our thesis/approach (in section 1.3)
+in this we need to explain the reasoning, reference the most relevant paper.
+- in the last sentence we can't say "ontology-based multi agent pipeline... ect." ; we can just explain the reasoning: (1) we are extending the el baff model with better context engineering, and our approach validates how we try to improve this context
+- adding a small graph showing where exactly our approahc sits (sort of a miniature graph of the one in chapter 4) shoowing where we are working on (mostly in between retrieval and generation) and what we are not doing (working on retrieval or improving the underlying generation model).
+
+- remove mistral small 24B model name in 1.3
+- we need tio think about wether all these RQs are warranted and needed? are some not scoped or formulated correctly?
+- we need to add a mini results section between 1.3 and 1.4: what's the takeaway from this thesis, how did the models perform in comparison? (part of the full thesis story). we can give the scores for the 4 criteria directly matching the 4 failure modes from 1.2
+
+- in this same mini results section we can add a small part saying how (when given full text (when available), quantitive precision goes up at the cost of other metric performance, probably due to the longer contexts and difficulty to keep the numbers context aligned), here are the scores: set	set_label	scientific_accuracy_mean	relevance_mean	completeness_mean	directness_mean	quantitative_precision_mean	response_structure_mean	scope_awareness_mean	helpfulness_mean	overall_mean	scientific_accuracy_sd	relevance_sd	completeness_sd	directness_sd	quantitative_precision_sd	response_structure_sd	scope_awareness_sd	helpfulness_sd	overall_sd
+set1	DLR 2-Step RAG (Large)	6.6571428571428575	6.614285714285714	6.571428571428571	4.585714285714285	4.071428571428571	5.9	4.542857142857143	5.128571428571429	5.508928571428571	0.5617187466255323	0.6207255488856065	0.627195935255346	0.6701256023920937	1.1956615847549839	0.6173810980989417	0.7553809728068843	0.7405722145536815	0.5406155193402727
+set2	Ontology-Enhanced RAG (Small, abstracts)	7.828571428571428	7.957142857142857	7.457142857142857	7.928571428571429	5.928571428571429	7.671428571428572	7.628571428571429	7.414285714285715	7.476785714285715	0.6587521926686511	0.5757342957441968	0.7553809728068843	0.6213922789906823	1.5258300527570168	0.7934775518304215	0.8370311332396319	0.8596065352503636	0.6314137781306728
+set3	No-Ontology RAG	7.185714285714286	7.557142857142857	6.857142857142857	7.114285714285714	5.328571428571428	7.328571428571428	7.071428571428571	6.557142857142857	6.875	0.8391309711537779	0.9268258796452138	1.0113230577427537	0.6924616275217437	1.5296246444128152	0.756065877266026	0.6442933118041897	1.0852865017543842	0.7402751153299776
+set4	Zero-Shot	7	7.571428571428571	6.914285714285715	6.671428571428572	4.014285714285714	7.3	5.3428571428571425	5.414285714285715	6.2785714285714285	0.6370220572706061	0.6930593502290829	0.6966349166093654	0.6532289602690327	1.2216982376392838	0.5477225575051661	0.866204686552902	0.8425781199382986	0.5603002189931097
+set5	Ontology+Full-Text (Small)	7.228571428571429	7.557142857142857	7.214285714285714	7.085714285714285	6.828571428571428	7.714285714285714	7.042857142857143	6.914285714285715	7.198214285714286	0.6409103256686182	0.8277035506157161	1.0340977603949397	0.6966349166093654	1.6415919153562943	0.8190283593479222	0.9236931902589999	1.2481041523668126	0.7788802049776359
+set6	Ontology+Full-Text (Large)	7.114285714285714	7.642857142857143	7.585714285714285	7.3428571428571425	7.814285714285714	8.014285714285714	7.185714285714286	7.457142857142857	7.519642857142857	0.8434377057975749	0.8171302609462198	1.0284765311640707	0.6344166391652172	0.8562279451150022	0.6701256023920937	0.7281673868494946	0.7553809728068843	0.6264966552234825
+
+
+\end{comment}
+
+
 \chapter{Introduction}
 \label{chap:introduction}
 
@@ -8,10 +31,10 @@ Large language models (LLMs) hallucinate, and in scientific domains these errors
 
 Earth observation (EO) is particularly sensitive to all three. It spans remote sensing, climate monitoring, and environmental assessment, and it relies on specialised vocabulary, quantitative accuracy, and strict temporal and spatial context~\citep{aschbacher2020earth}. Each measurement or study only makes sense in context: which sensors were used, what was measured, when and where, and under which conditions.
 
-A recent knowledge-graph RAG model~\citep{elbaff2025earthobservationrag} represents the current state of the art for open-source EO question answering: it retrieves candidate documents via a knowledge graph using lexical and semantic search and generates answers in a subsequent generation step. This thesis investigates where this model falls short and proposes a multi-agent extension to address its limitations. In doing so, we investigate why larger proprietary language models such as GPT-5.1~\citep{openai2024gpt4} and Claude Sonnet~4.5~\citep{anthropic2024claude} handle EO queries well while this open-source model struggles. We use this model and the data generated by its architecture as the \emph{baseline} throughout this thesis. All proposed extensions are compared against it.
+\citet{elbaff2025earthobservationrag} propose a knowledge-graph RAG pipeline for open-source EO question answering, combining lexical and semantic retrieval with a structured generation step. We assess why larger proprietary language models such as GPT-5.1~\citep{openai2024gpt4} and Claude Sonnet~4.5~\citep{anthropic2024claude} handle EO queries well while this open-source model underperforms. We use this model and the data generated by its architecture as the \emph{baseline} throughout this thesis. All proposed extensions are compared against it.
 
-Standard RAG approaches, including the baseline, retrieve documents using lexical and semantic search, but without modelling the semantic structure of the query. Even when relevant documents are retrieved, the assembled context fails to support generation, critical details are lost, and irrelevant passages dilute the answer to the point where it cannot support reliable scientific reasoning. This thesis addresses these failures by designing, implementing, and evaluating an ontology-based multi-agent pipeline that imposes semantic structure on both retrieval and generation.
-
+Standard RAG approaches, including the baseline, retrieve documents using lexical and semantic search, without modelling the semantic structure of the query. Even when relevant documents are retrieved, the assembled context fails to support generation, critical details are lost, and irrelevant passages dilute the answer to the point where it cannot support reliable scientific reasoning. This thesis addresses these failures by designing, implementing, and evaluating an
+ontology-based multi-agent pipeline that imposes semantic structure on context construction and generation.
 \section{Problem Statement}
 \label{sec:problem}
 
@@ -27,11 +50,11 @@ A direct question warrants a direct answer. The baseline opens with several sent
 
 \subparagraph{2. Missing quantitative precision}
 
-Scientific answers should extract and report the specific numbers that matter: thresholds, metrics, and the conditions under which they were obtained. The baseline mentions relevant papers without extracting these quantitative details, even when the cited sources contain them explicitly. Proprietary models surfaced the required measurements more often.
+Scientific answers should extract and report the specific numbers that matter: thresholds, metrics, and the conditions under which they were obtained. The baseline mentions relevant papers without extracting these quantitative details, even when the cited sources contain them explicitly.
 
 \subparagraph{3. Lack of useful structure}
 
-Not every question is best answered in prose; tables and lists are often more appropriate for comparisons and multi-part queries. The baseline defaults to long paragraphs where key points are scattered and mixed with background, regardless of the question type. Proprietary models adapt their response format to the nature of the question.
+Not every question is best answered in prose; tables and lists are often more appropriate for comparisons and multi-part queries. The baseline defaults to long paragraphs where key points are scattered and mixed with background, regardless of the question type. Proprietary models are able to adapt their response format to the nature of the question.
 
 \subparagraph{4. Context misalignment}
 

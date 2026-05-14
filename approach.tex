@@ -1,3 +1,13 @@
+\begin{comment}
+- flow at start of chapter 4 needs to be better, between the sections.
+- dont mention aql results or open alex api (call it external data/documents for now) in graph and other places before they are formally introduced.
+
+- each design decision needs to be backed up/ explained. either referencing a paper or giving a clear and correct reasoning behind it. this concerns: (1) "4-8 pairs" (resoning for this is that we want the ontology to be somewhat consistent, include as many dimensions as possible, which is not always possible given a simpler question, but also be able to have several value pairs per dimension for complex questions but not too many pairs either). (2) the "five mandatory dimensions" (this is a direct reference to the relevant paper about EO). (3) centrality scoring (this can be either explained as a way to enrich the ontology, make it more useful for the following agents, potentially a paper can be referenced here if relevant and applicable). (4) "four labelled sections" (resoning behind this is to mirror a similar structure as the el baff model (per document then topics) but then also add caveats and gaps section to address the scope awareness/context misalignment failure mode from the baseline.
+
+
+\end{comment}
+
+
 \chapter{Approach}
 \label{chap:approach}
 
@@ -50,7 +60,7 @@ Figure~\ref{fig:pipeline} shows the end-to-end architecture. A query passes thro
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\textwidth]{pipeline_diagram}
-\caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Grey boxes represent existing two-step baseline components; dark blue boxes represent the three new agents.}
+\caption{Architecture of the ontology-enhanced multi-agent RAG pipeline. Light blue boxes represent existing two-step baseline components; dark blue boxes represent the three new agents.}
 \label{fig:pipeline}
 \end{figure}
 
